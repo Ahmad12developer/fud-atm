@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Report Timetable Clash | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#DC2626] text-white rounded">
+        Incident Escalation
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Student Feedback Desk &bull; {{ user.id }}</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Report Operational Timetable Clash or Facility Incident
+    </h1>
+    <p class="text-xs text-slate-500">
+      Flag real-time lecture conflicts, locked lecture theatres, venue collisions, or severe capacity deficits.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <a href="/student/timetable/" class="text-xs font-bold text-slate-600 hover:text-slate-900">
+      &larr; Back to Timetable
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white rounded-2xl border border-[#E2E8F0] shadow-xl overflow-hidden">
+    
+    <!-- Incident Header Banner -->
+    <div class="p-5 bg-red-600 text-white flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wide">
+          Direct Escalation to Faculty Timetable Officer
+        </h2>
+        <p class="text-xs text-red-100">
+          Urgent flags are broadcast to the Faculty Admin and logged in the institutional audit trail.
+        </p>
+      </div>
+    </div>
+
+    <!-- Structured Clash Report Form with Strict CSRF Protection -->
+    <form method="POST" action="/student/report-clash/" class="p-6 sm:p-8 space-y-5 text-xs">
+      {% csrf_token %}
+
+      <!-- Incident Classification -->
+      <div>
+        <label for="incident_category" class="block font-bold uppercase text-slate-700 mb-1.5">
+          Incident Classification <span class="text-red-500">*</span>
+        </label>
+        <select id="incident_category" name="incident_category" required
+                class="w-full p-3 rounded-lg border border-slate-300 font-semibold text-slate-900 focus:ring-2 focus:ring-[#1B4D3E]">
+          <option value="VENUE_DOUBLE_BOOKED">Venue Double-Booked (Another department occupies our hall)</option>
+          <option value="HALL_LOCKED">Lecture Theatre Locked / Inaccessible</option>
+          <option value="CAPACITY_OVERFLOW">Severe Capacity Overflow (Students standing / locked out)</option>
+          <option value="SCHEDULE_OVERLAP">Direct Schedule Overlap (Two lectures scheduled at same hour)</option>
+          <option value="LECTURER_ABSENT">Lecturer Did Not Appear</option>
+        </select>
+      </div>
+
+      <!-- Course Unit Affected -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="course_affected" class="block font-bold uppercase text-slate-700 mb-1.5">
+            Course Unit Affected <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="course_affected" name="course_code" required
+                 placeholder="e.g. CSC 301 or MTH 201"
+                 class="w-full p-3 rounded-lg border border-slate-300 font-bold uppercase font-mono">
+        </div>
+
+        <div>
+          <label for="venue_affected" class="block font-bold uppercase text-slate-700 mb-1.5">
+            Location / Hall Involved <span class="text-red-500">*</span>
+          </label>
+          <select id="venue_affected" name="venue" required
+                  class="w-full p-3 rounded-lg border border-slate-300 font-medium">
+            <option value="LT-AG">Abubakar Gimba Lecture Theatre</option>
+            <option value="TWIN-A">Faculty Twin Lecture Theatre A</option>
+            <option value="TWIN-B">Faculty Twin Lecture Theatre B</option>
+            <option value="LAB-PTDF">PTDF Software Engineering Lab</option>
+            <option value="HALL-4">Hall 4</option>
+            <option value="OTHER">Other Faculty Hall</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Occurrence Time -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="incident_day" class="block font-bold uppercase text-slate-700 mb-1.5">
+            Day of Incident <span class="text-red-500">*</span>
+          </label>
+          <select id="incident_day" name="day" required class="w-full p-3 rounded-lg border border-slate-300 font-medium">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="incident_time" class="block font-bold uppercase text-slate-700 mb-1.5">
+            Scheduled Time Slot <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="incident_time" name="time_slot" required
+                 placeholder="e.g. 08:00 AM - 10:00 AM"
+                 class="w-full p-3 rounded-lg border border-slate-300 font-mono">
+        </div>
+      </div>
+
+      <!-- Description & Evidence -->
+      <div>
+        <label for="incident_description" class="block font-bold uppercase text-slate-700 mb-1.5">
+          Detailed Observations / Incident Description <span class="text-red-500">*</span>
+        </label>
+        <textarea id="incident_description" name="description" rows="4" required
+                  placeholder="Describe the clash with specific facts (e.g. At 8:05 AM, Twin Theatre A was found occupied by Faculty of Science for PHY 102 while our CSC 305 class was waiting outside)..."
+                  class="w-full p-3 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-[#1B4D3E]"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+        <a href="/student/timetable/" class="text-slate-500 hover:text-slate-800 font-bold">
+          Cancel
+        </a>
+
+        <button type="submit"
+                class="px-6 py-2.5 rounded-lg bg-[#DC2626] hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <span>Submit Incident Report</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

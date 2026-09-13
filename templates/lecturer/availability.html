@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Availability Preferences | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Staff Portal
+      </span>
+      <span class="text-xs text-slate-500 font-mono">2025/2026 Harmattan Semester</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Weekly Availability & Preference Matrix
+    </h1>
+    <p class="text-xs text-slate-500">
+      Indicate preferred and unavailable teaching time windows to guide the automated genetic scheduler.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <button type="button" onclick="resetPreferencesToDefault()"
+            class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-sm transition">
+      Reset All
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="/lecturer/availability/" id="availabilityForm" class="space-y-6">
+  {% csrf_token %}
+
+  <!-- Instructions & Legend -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="text-xs text-slate-600 leading-relaxed">
+      <strong class="font-bold text-slate-900 block mb-1">Interactive Selection Instructions:</strong>
+      Click any slot to cycle state:
+      <span class="inline-flex items-center text-[#1B4D3E] font-bold ml-1">&#10003; Available</span> &rarr;
+      <span class="inline-flex items-center text-amber-700 font-bold ml-1">&#9733; Preferred (High Priority)</span> &rarr;
+      <span class="inline-flex items-center text-[#DC2626] font-bold ml-1">&#10007; Unavailable (Blockout)</span>
+    </div>
+
+    <!-- Counters -->
+    <div class="flex items-center space-x-3 text-xs">
+      <div class="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold text-center">
+        <span id="count_available">16</span> Available
+      </div>
+      <div class="px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-bold text-center">
+        <span id="count_preferred">6</span> Preferred
+      </div>
+      <div class="px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-900 font-bold text-center">
+        <span id="count_unavailable">3</span> Blocked
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Preference Grid -->
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-xs min-w-[900px]">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-700 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3 border-r border-[#E2E8F0] text-center w-28 bg-[#1B4D3E] text-white">Day</th>
+            <th class="p-3 border-r border-[#E2E8F0] text-center">08:00 - 10:00</th>
+            <th class="p-3 border-r border-[#E2E8F0] text-center">10:00 - 12:00</th>
+            <th class="p-3 border-r border-[#E2E8F0] text-center">12:00 - 14:00</th>
+            <th class="p-3 border-r border-[#E2E8F0] text-center">14:00 - 16:00</th>
+            <th class="p-3 text-center">16:00 - 18:00</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E2E8F0]">
+
+          <!-- Helper Macro Simulation for Days -->
+          <!-- MONDAY -->
+          <tr class="h-20">
+            <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+              Monday
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'mon_1')">
+              <input type="hidden" name="slot_mon_1" id="mon_1" value="PREFERRED">
+              <div class="slot-box h-full p-2 rounded-lg bg-amber-50 border-2 border-amber-400 text-amber-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#9733; Preferred</span>
+                <span class="text-[10px] font-normal">Morning Peak</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'mon_2')">
+              <input type="hidden" name="slot_mon_2" id="mon_2" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'mon_3')">
+              <input type="hidden" name="slot_mon_3" id="mon_3" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'mon_4')">
+              <input type="hidden" name="slot_mon_4" id="mon_4" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2" onclick="toggleSlot(this, 'mon_5')">
+              <input type="hidden" name="slot_mon_5" id="mon_5" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- TUESDAY -->
+          <tr class="h-20">
+            <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+              Tuesday
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'tue_1')">
+              <input type="hidden" name="slot_tue_1" id="tue_1" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'tue_2')">
+              <input type="hidden" name="slot_tue_2" id="tue_2" value="UNAVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-red-50 border-2 border-red-300 text-red-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10007; Unavailable</span>
+                <span class="text-[10px] font-normal">Dept Board</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'tue_3')">
+              <input type="hidden" name="slot_tue_3" id="tue_3" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'tue_4')">
+              <input type="hidden" name="slot_tue_4" id="tue_4" value="PREFERRED">
+              <div class="slot-box h-full p-2 rounded-lg bg-amber-50 border-2 border-amber-400 text-amber-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#9733; Preferred</span>
+                <span class="text-[10px] font-normal">Afternoon Slot</span>
+              </div>
+            </td>
+            <td class="p-2" onclick="toggleSlot(this, 'tue_5')">
+              <input type="hidden" name="slot_tue_5" id="tue_5" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- WEDNESDAY -->
+          <tr class="h-20">
+            <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+              Wednesday
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'wed_1')">
+              <input type="hidden" name="slot_wed_1" id="wed_1" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'wed_2')">
+              <input type="hidden" name="slot_wed_2" id="wed_2" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'wed_3')">
+              <input type="hidden" name="slot_wed_3" id="wed_3" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'wed_4')">
+              <input type="hidden" name="slot_wed_4" id="wed_4" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2" onclick="toggleSlot(this, 'wed_5')">
+              <input type="hidden" name="slot_wed_5" id="wed_5" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- THURSDAY -->
+          <tr class="h-20">
+            <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+              Thursday
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'thu_1')">
+              <input type="hidden" name="slot_thu_1" id="thu_1" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'thu_2')">
+              <input type="hidden" name="slot_thu_2" id="thu_2" value="PREFERRED">
+              <div class="slot-box h-full p-2 rounded-lg bg-amber-50 border-2 border-amber-400 text-amber-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#9733; Preferred</span>
+                <span class="text-[10px] font-normal">Mid-Morning</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'thu_3')">
+              <input type="hidden" name="slot_thu_3" id="thu_3" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'thu_4')">
+              <input type="hidden" name="slot_thu_4" id="thu_4" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2" onclick="toggleSlot(this, 'thu_5')">
+              <input type="hidden" name="slot_thu_5" id="thu_5" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- FRIDAY -->
+          <tr class="h-20">
+            <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+              Friday
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'fri_1')">
+              <input type="hidden" name="slot_fri_1" id="fri_1" value="PREFERRED">
+              <div class="slot-box h-full p-2 rounded-lg bg-amber-50 border-2 border-amber-400 text-amber-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#9733; Preferred</span>
+                <span class="text-[10px] font-normal">Early Slot</span>
+              </div>
+            </td>
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'fri_2')">
+              <input type="hidden" name="slot_fri_2" id="fri_2" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            
+            <!-- Protected Friday Juma'at -->
+            <td class="p-2 border-r border-[#E2E8F0] bg-amber-100/70 text-center">
+              <input type="hidden" name="slot_fri_3" id="fri_3" value="LOCKED_PRAYER">
+              <div class="h-full p-2 rounded-lg border border-dashed border-amber-400 text-amber-900 font-bold text-[10px] flex flex-col items-center justify-center">
+                <span>JUMA'AT PRAYER</span>
+                <span class="font-normal text-slate-500">Senate Blackout</span>
+              </div>
+            </td>
+
+            <td class="p-2 border-r border-[#E2E8F0]" onclick="toggleSlot(this, 'fri_4')">
+              <input type="hidden" name="slot_fri_4" id="fri_4" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+            <td class="p-2" onclick="toggleSlot(this, 'fri_5')">
+              <input type="hidden" name="slot_fri_5" id="fri_5" value="AVAILABLE">
+              <div class="slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center">
+                <span>&#10003; Available</span>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Submit Preferences Card -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="text-xs text-slate-500">
+      Last submitted: <span class="font-mono text-slate-700 font-bold">Oct 10, 2025 at 14:22</span> &bull; Changes will feed into the next genetic solver iteration.
+    </div>
+
+    <button type="submit"
+            class="w-full sm:w-auto px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow-md transition">
+      Submit Availability Preferences
+    </button>
+  </div>
+</form>
+
+<script>
+  function toggleSlot(cell, inputId) {
+    const input = document.getElementById(inputId);
+    if (!input || input.value === 'LOCKED_PRAYER') return;
+
+    const box = cell.querySelector('.slot-box');
+    if (!box) return;
+
+    if (input.value === 'AVAILABLE') {
+      input.value = 'PREFERRED';
+      box.className = 'slot-box h-full p-2 rounded-lg bg-amber-50 border-2 border-amber-400 text-amber-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center';
+      box.innerHTML = '<span>&#9733; Preferred</span>';
+    } else if (input.value === 'PREFERRED') {
+      input.value = 'UNAVAILABLE';
+      box.className = 'slot-box h-full p-2 rounded-lg bg-red-50 border-2 border-red-300 text-red-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center';
+      box.innerHTML = '<span>&#10007; Unavailable</span>';
+    } else {
+      input.value = 'AVAILABLE';
+      box.className = 'slot-box h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-center cursor-pointer flex flex-col items-center justify-center';
+      box.innerHTML = '<span>&#10003; Available</span>';
+    }
+  }
+
+  function resetPreferencesToDefault() {
+    location.reload();
+  }
+</script>
+{% endblock %}

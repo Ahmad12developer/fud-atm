@@ -1,0 +1,345 @@
+
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#F8F9FA]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Automated Timetable Management System - Federal University Dutse (FUD), Jigawa State">
+  <meta name="institution" content="Federal University Dutse">
+  <meta name="csrf-token" content="7k5qtojSgqfy5mhTfN6mcCkckkYUtqFnjfN6dVAv7CwMwtuyKsITVYb8HDRKd5xm">
+  <title>Unified Portal Login | Federal University Dutse ATMS</title>
+
+  <!-- Tailwind CSS CDN with FUD Brand Theme -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fud: {
+              green: '#1B4D3E',
+              'green-dark': '#13392E',
+              'green-light': '#246552',
+              brown: '#5C4033',
+              'brown-light': '#755343',
+              bg: '#F8F9FA',
+              surface: '#FFFFFF',
+              border: '#E2E8F0',
+            },
+            slate: {
+              900: '#0F172A',
+              500: '#64748B',
+            },
+            emerald: {
+              600: '#059669',
+            },
+            amber: {
+              600: '#D97706',
+            },
+            crimson: {
+              600: '#DC2626',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Institutional Fallback & Utility Styles -->
+  <link rel="stylesheet" href="/static/css/fud-theme.css">
+
+  
+</head>
+<body class="h-full font-sans antialiased text-[#0F172A] bg-[#F8F9FA] flex flex-col selection:bg-[#1B4D3E] selection:text-white">
+
+  
+<div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-[#F8F9FA]">
+
+  <!-- Institutional Branding Header -->
+  <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white border-2 border-amber-400 shadow-lg p-2 mb-3">
+      <svg class="w-16 h-16 text-[#1B4D3E]" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1B4D3E"/>
+        <path d="M4 9.5V15.5C4 18.5 7.5 21 12 21C16.5 21 20 18.5 20 15.5V9.5L12 14L4 9.5Z" fill="#5C4033" opacity="0.9"/>
+        <circle cx="12" cy="7" r="1.5" fill="#D97706"/>
+      </svg>
+    </div>
+    
+    <h1 class="text-2xl font-black tracking-tight text-[#1B4D3E]">
+      FEDERAL UNIVERSITY DUTSE
+    </h1>
+    <p class="text-xs font-bold uppercase tracking-widest text-[#5C4033] mt-0.5">
+      JIGAWA STATE, NIGERIA
+    </p>
+    <h2 class="mt-2 text-sm font-semibold text-slate-700">
+      Automated Timetable Management System (ATMS)
+    </h2>
+    <p class="mt-1 text-xs text-slate-500">
+      Single Secure Gateway for Central Admins, Faculty Officers, Lecturers & Students
+    </p>
+  </div>
+
+  <!-- Login Card Surface -->
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+    <div class="bg-white py-8 px-6 shadow-xl rounded-2xl border border-[#E2E8F0] sm:px-10">
+
+      <!-- Flash Message Alerts -->
+      <!-- Django Flash Alert Messages Component -->
+
+
+
+      
+
+      <!-- Unified Login Form with Strict CSRF Protection -->
+      <form class="space-y-5" action="/login/" method="POST" id="unifiedLoginForm">
+        <input type="hidden" name="csrfmiddlewaretoken" value="7k5qtojSgqfy5mhTfN6mcCkckkYUtqFnjfN6dVAv7CwMwtuyKsITVYb8HDRKd5xm">
+
+        <!-- Institutional Identifier Field -->
+        <div>
+          <label for="institutional_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            Institutional Identifier (FUD ID)
+          </label>
+          <div class="mt-1.5 relative rounded-lg shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <input id="institutional_id" name="institutional_id" type="text" required autocomplete="username"
+                   placeholder="e.g., FUD/ADM/2024/001 or FUD/CST/21/0456"
+                   value=""
+                   class="block w-full pl-10 pr-4 py-2.5 sm:text-xs font-mono border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B4D3E] focus:border-[#1B4D3E]">
+          </div>
+          <p class="mt-1 text-[11px] text-slate-500">
+            System automatically resolves role from ID prefix (<code class="text-[#1B4D3E] font-semibold">ADM</code>, <code class="text-[#1B4D3E] font-semibold">SCI</code>, <code class="text-[#1B4D3E] font-semibold">LEC</code>, <code class="text-[#1B4D3E] font-semibold">CST</code>).
+          </p>
+        </div>
+
+        <!-- Password Field -->
+        <div>
+          <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            Institutional Password
+          </label>
+          <div class="mt-1.5 relative rounded-lg shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <input id="password" name="password" type="password" required autocomplete="current-password"
+                   placeholder="Enter your confidential password"
+                   class="block w-full pl-10 pr-4 py-2.5 sm:text-xs border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B4D3E] focus:border-[#1B4D3E]">
+          </div>
+        </div>
+
+        <!-- Security Session Keep-Alive -->
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center">
+            <input id="remember_me" name="remember_me" type="checkbox"
+                   class="h-4 w-4 text-[#1B4D3E] focus:ring-[#1B4D3E] border-slate-300 rounded">
+            <label for="remember_me" class="ml-2 block text-slate-600">
+              Bind secure session
+            </label>
+          </div>
+          <a href="#" class="font-semibold text-[#1B4D3E] hover:text-[#13392E] hover:underline">
+            Forgot password?
+          </a>
+        </div>
+
+        <!-- Submit Button (Institutional Forest Green) -->
+        <div>
+          <button type="submit"
+                  class="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-md text-xs font-bold uppercase tracking-wider text-white bg-[#1B4D3E] hover:bg-[#13392E] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B4D3E] transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+            </svg>
+            Authenticate & Access Portal
+          </button>
+        </div>
+      </form>
+
+      <!-- Quick Role Fill Demo Buttons -->
+      <div class="mt-6 pt-5 border-t border-slate-200">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-3">
+          Instant Role Scopes (One-Click Testing)
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="fillCredentials('FUD/ADM/2024/001', 'Central Admin')"
+                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
+            <span class="font-bold text-[#1B4D3E] block">Central Admin</span>
+            <span class="text-slate-500 font-mono text-[10px]">FUD/ADM/2024/001</span>
+          </button>
+          <button type="button" onclick="fillCredentials('FUD/SCI/2024/014', 'Faculty Admin')"
+                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
+            <span class="font-bold text-[#1B4D3E] block">Faculty Admin</span>
+            <span class="text-slate-500 font-mono text-[10px]">FUD/SCI/2024/014</span>
+          </button>
+          <button type="button" onclick="fillCredentials('FUD/LEC/2024/088', 'Dr. Aminu Garba')"
+                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
+            <span class="font-bold text-[#1B4D3E] block">Lecturer</span>
+            <span class="text-slate-500 font-mono text-[10px]">FUD/LEC/2024/088</span>
+          </button>
+          <button type="button" onclick="fillCredentials('FUD/CST/21/0456', 'Fatima Bello')"
+                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
+            <span class="font-bold text-[#1B4D3E] block">Student</span>
+            <span class="text-slate-500 font-mono text-[10px]">FUD/CST/21/0456</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Security & Institutional Notice -->
+    <div class="mt-6 text-center text-xs text-slate-500 space-y-1">
+      <p class="font-medium">
+        ICT Directorate &bull; Directorate of Academic Planning (DAP)
+      </p>
+      <p class="text-[11px] text-slate-400">
+        Unauthorized access or credential sharing is strictly prohibited under FUD ICT Security Guidelines.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function fillCredentials(id, roleName) {
+    const idInput = document.getElementById('institutional_id');
+    const pwdInput = document.getElementById('password');
+    if (idInput) idInput.value = id;
+    if (pwdInput) pwdInput.value = 'FudPass@2025';
+  }
+</script>
+
+
+  <!-- Reusable Confirmation Dialog -->
+  <!-- Reusable Confirmation Dialog for Destructive / Critical Actions -->
+<dialog id="confirmModal" class="rounded-xl shadow-2xl p-0 border border-[#E2E8F0] backdrop:bg-slate-900/60 max-w-md w-full text-slate-900">
+  <div class="bg-white rounded-xl overflow-hidden">
+    
+    <!-- Modal Header -->
+    <div class="p-5 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center space-x-3">
+      <div id="confirmModalIcon" class="w-10 h-10 rounded-full bg-crimson-100 text-[#DC2626] flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900">
+          Confirm Action
+        </h3>
+        <p class="text-xs text-slate-500">
+          Federal University Dutse Security Protocol
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <p id="confirmModalMessage" class="text-sm text-slate-700 leading-relaxed">
+        Are you sure you want to proceed with this operation? This action will be logged in the Institutional Audit trail.
+      </p>
+    </div>
+
+    <!-- Modal Actions with CSRF Protection -->
+    <form id="confirmModalForm" method="POST" action="">
+      <input type="hidden" name="csrfmiddlewaretoken" value="7k5qtojSgqfy5mhTfN6mcCkckkYUtqFnjfN6dVAv7CwMwtuyKsITVYb8HDRKd5xm">
+      <input type="hidden" name="action_target_id" id="confirmModalTargetId" value="">
+      <div class="p-4 bg-[#F8F9FA] border-t border-[#E2E8F0] flex justify-end space-x-3">
+        <button type="button" onclick="closeModal('confirmModal')"
+                class="px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg shadow-sm transition">
+          Cancel
+        </button>
+        <button type="submit" id="confirmModalBtn"
+                class="px-4 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow transition focus:ring-2 focus:ring-red-400">
+          Confirm Operation
+        </button>
+      </div>
+    </form>
+
+  </div>
+</dialog>
+
+<script>
+  /**
+   * Helper to trigger confirmation modal with dynamic parameters
+   */
+  function showConfirmModal(options) {
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMessage');
+    const formEl = document.getElementById('confirmModalForm');
+    const targetEl = document.getElementById('confirmModalTargetId');
+    const btnEl = document.getElementById('confirmModalBtn');
+
+    if (titleEl && options.title) titleEl.textContent = options.title;
+    if (msgEl && options.message) msgEl.textContent = options.message;
+    if (formEl && options.actionUrl) formEl.action = options.actionUrl;
+    if (targetEl && options.targetId) targetEl.value = options.targetId;
+    if (btnEl && options.buttonText) btnEl.textContent = options.buttonText;
+    if (btnEl && options.buttonClass) btnEl.className = options.buttonClass;
+
+    openModal('confirmModal');
+  }
+</script>
+
+
+  <!-- Core Security & Interaction Primitives -->
+  <script>
+    /**
+     * Extracts CSRF token safely from DOM or cookies
+     */
+    function getCsrfToken() {
+      const metaTag = document.querySelector('meta[name="csrf-token"]');
+      if (metaTag && metaTag.content) {
+        return metaTag.content;
+      }
+      const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (tokenInput) {
+        return tokenInput.value;
+      }
+      const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+      return cookieMatch ? cookieMatch[1] : '';
+    }
+
+    /**
+     * Generic Modal Controller for Accessible HTML5 <dialog>
+     */
+    function openModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else if (dialog) {
+        dialog.classList.remove('hidden');
+      }
+    }
+
+    function closeModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.close === 'function') {
+        dialog.close();
+      } else if (dialog) {
+        dialog.classList.add('hidden');
+      }
+    }
+
+    // Dismiss message alerts
+    function dismissAlert(alertEl) {
+      if (alertEl) {
+        alertEl.style.opacity = '0';
+        setTimeout(() => alertEl.remove(), 200);
+      }
+    }
+  </script>
+
+  
+</body>
+</html>

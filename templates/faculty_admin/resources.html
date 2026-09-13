@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Faculty Resources CRUD | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Resource Management
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Faculty of Computing & IT</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Academic Venues, Courses & Staff Inventory
+    </h1>
+    <p class="text-xs text-slate-500">
+      Configure infrastructural capacities, curriculum credit limits, and faculty teaching allocations.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <button type="button" onclick="openAddResourceModal()"
+            class="px-4 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span>Add New Resource</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Tab Navigation Bar -->
+<div class="border-b border-[#E2E8F0] flex space-x-8 text-xs font-bold">
+  <button type="button" onclick="switchResourceTab('venues')" id="tab-btn-venues"
+          class="pb-3 border-b-2 border-[#1B4D3E] text-[#1B4D3E] flex items-center space-x-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    <span>Lecture Venues & Laboratories ({{ venues.count|default:"0" }})</span>
+  </button>
+
+  <button type="button" onclick="switchResourceTab('courses')" id="tab-btn-courses"
+          class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+    <span>Curriculum Courses ({{ courses.count|default:"0" }})</span>
+  </button>
+
+  <button type="button" onclick="switchResourceTab('lecturers')" id="tab-btn-lecturers"
+          class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    <span>Academic Staff & Lecturers ({{ lecturers.count|default:"0" }})</span>
+  </button>
+</div>
+
+<!-- =================================================================== -->
+<!-- TAB 1: VENUES                                                       -->
+<!-- =================================================================== -->
+<div id="tab-pane-venues" class="space-y-4">
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3.5 pl-5">Venue Code</th>
+            <th class="p-3.5">Venue Name</th>
+            <th class="p-3.5">Building Location</th>
+            <th class="p-3.5 text-center">Capacity</th>
+            <th class="p-3.5">Equipment / Facilities</th>
+            <th class="p-3.5 text-center">Status</th>
+            <th class="p-3.5 pr-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          {% for venue in venues %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">{{ venue.code }}</td>
+            <td class="p-3.5 font-bold text-slate-900">{{ venue.name }}</td>
+            <td class="p-3.5">{{ venue.building_location|default:"Main Campus" }}</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">{{ venue.capacity }} seats</td>
+            <td class="p-3.5">
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">{{ venue.venue_type|default:"Classroom" }}</span>
+              {% if venue.has_projector %}<span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">Projector</span>{% endif %}
+            </td>
+            <td class="p-3.5 text-center">
+              {% if venue.is_active %}
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold uppercase">Active</span>
+              {% else %}
+              <span class="px-2 py-0.5 bg-red-100 text-red-800 rounded text-[10px] font-bold uppercase">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="p-3.5 pr-5 text-right space-x-2">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="p-6 text-center text-slate-400">No lecture venues or laboratories registered.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- TAB 2: COURSES                                                      -->
+<!-- =================================================================== -->
+<div id="tab-pane-courses" class="space-y-4 hidden">
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3.5 pl-5">Course Code</th>
+            <th class="p-3.5">Course Title</th>
+            <th class="p-3.5 text-center">Credit Units</th>
+            <th class="p-3.5 text-center">Level</th>
+            <th class="p-3.5 text-center">Cohort Size</th>
+            <th class="p-3.5">Assigned Lecturer</th>
+            <th class="p-3.5 pr-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          {% for course in courses %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">{{ course.code }}</td>
+            <td class="p-3.5 font-bold text-slate-900">{{ course.title }}</td>
+            <td class="p-3.5 text-center font-mono font-bold">{{ course.credit_units }} CU</td>
+            <td class="p-3.5 text-center">{{ course.level }}L</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">{{ course.expected_capacity }}</td>
+            <td class="p-3.5 font-medium">{{ course.allocations.first.lecturer.user.get_full_name|default:"Departmental Pool" }}</td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="p-6 text-center text-slate-400">No courses registered.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- TAB 3: LECTURERS                                                    -->
+<!-- =================================================================== -->
+<div id="tab-pane-lecturers" class="space-y-4 hidden">
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3.5 pl-5">Staff ID</th>
+            <th class="p-3.5">Full Name</th>
+            <th class="p-3.5">Academic Rank</th>
+            <th class="p-3.5">Department</th>
+            <th class="p-3.5 text-center">Max Weekly Load</th>
+            <th class="p-3.5 text-center">Preferences</th>
+            <th class="p-3.5 pr-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          {% for lec in lecturers %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">{{ lec.staff_id }}</td>
+            <td class="p-3.5 font-bold text-slate-900">{{ lec.user.get_full_name }}</td>
+            <td class="p-3.5">{{ lec.rank|default:"Academic Staff" }}</td>
+            <td class="p-3.5">{{ lec.department.name }}</td>
+            <td class="p-3.5 text-center font-mono font-bold">{{ lec.max_hours_per_week|default:"12" }} Hours</td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">Configured</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">View Profile</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="p-6 text-center text-slate-400">No lecturers found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Resource Modal Dialog with Strict CSRF Protection -->
+<dialog id="addResourceModal" class="rounded-xl shadow-2xl p-0 border border-[#E2E8F0] max-w-lg w-full text-slate-900">
+  <div class="bg-white rounded-xl overflow-hidden">
+    <div class="p-5 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center justify-between">
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Register New Academic Resource</h3>
+        <p class="text-xs text-slate-500">Federal University Dutse Resource Inventory</p>
+      </div>
+      <button type="button" onclick="closeModal('addResourceModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+    </div>
+
+    <form method="POST" action="/faculty/resources/add/" class="p-6 space-y-4 text-xs">
+      {% csrf_token %}
+
+      <div>
+        <label class="block font-bold uppercase text-slate-600 mb-1">Resource Classification</label>
+        <select name="resource_type" class="w-full p-2 rounded-lg border border-slate-300 font-medium">
+          <option value="VENUE">Lecture Venue / Laboratory</option>
+          <option value="COURSE">Curriculum Course Unit</option>
+          <option value="STAFF">Academic Staff / Lecturer</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Code / Identifier</label>
+          <input type="text" name="code" placeholder="e.g. TWIN-C or CSC 205" required
+                 class="w-full p-2 rounded-lg border border-slate-300 font-mono">
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Capacity / Credit Units</label>
+          <input type="number" name="capacity" placeholder="e.g. 150" required
+                 class="w-full p-2 rounded-lg border border-slate-300">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold uppercase text-slate-600 mb-1">Official Name / Title</label>
+        <input type="text" name="name" placeholder="Full descriptive title" required
+               class="w-full p-2 rounded-lg border border-slate-300">
+      </div>
+
+      <div>
+        <label class="block font-bold uppercase text-slate-600 mb-1">Building Location / Department</label>
+        <input type="text" name="location" placeholder="e.g. Faculty of Science New Complex" required
+               class="w-full p-2 rounded-lg border border-slate-300">
+      </div>
+
+      <div class="p-4 bg-[#F8F9FA] border-t border-[#E2E8F0] flex justify-end space-x-3 -mx-6 -mb-6 mt-4">
+        <button type="button" onclick="closeModal('addResourceModal')"
+                class="px-4 py-2 font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg">
+          Cancel
+        </button>
+        <button type="submit"
+                class="px-4 py-2 font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow">
+          Register Resource
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+  function switchResourceTab(tabId) {
+    const tabs = ['venues', 'courses', 'lecturers'];
+    tabs.forEach(t => {
+      const pane = document.getElementById('tab-pane-' + t);
+      const btn = document.getElementById('tab-btn-' + t);
+      if (t === tabId) {
+        pane.classList.remove('hidden');
+        btn.classList.add('border-[#1B4D3E]', 'text-[#1B4D3E]');
+        btn.classList.remove('border-transparent', 'text-slate-500');
+      } else {
+        pane.classList.add('hidden');
+        btn.classList.remove('border-[#1B4D3E]', 'text-[#1B4D3E]');
+        btn.classList.add('border-transparent', 'text-slate-500');
+      }
+    });
+  }
+
+  function openAddResourceModal() {
+    openModal('addResourceModal');
+  }
+</script>
+{% endblock %}

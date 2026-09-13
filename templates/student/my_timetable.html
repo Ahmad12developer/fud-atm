@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Timetable | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Student Portal
+      </span>
+      <span class="text-xs text-slate-500 font-mono">{{ user.department }} &bull; {{ ACADEMIC_SEMESTER }}</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Academic Lecture Timetable
+    </h1>
+    <p class="text-xs text-slate-500">
+      Federal University Dutse &bull; Senate Approved 2025/2026 Teaching Timetable.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <a href="/student/report-clash/"
+       class="px-3.5 py-2 text-xs font-bold text-[#DC2626] bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <span>Report Clash / Incident</span>
+    </a>
+
+    <a href="/student/export/"
+       class="px-4 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+      <span>Print A4 Timetable</span>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Cohort Filter Toolbar -->
+<div class="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm flex flex-wrap items-center justify-between gap-4 text-xs">
+  <form method="GET" action="/student/timetable/" class="flex flex-wrap items-center gap-3">
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Academic Department</label>
+      <select name="department" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:ring-1 focus:ring-[#1B4D3E]">
+        <option value="CSC" selected>Computer Science</option>
+        <option value="SE">Software Engineering</option>
+        <option value="CYB">Cybersecurity</option>
+        <option value="IT">Information Technology</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Level Cohort</label>
+      <select name="level" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:ring-1 focus:ring-[#1B4D3E]">
+        <option value="100">100 Level</option>
+        <option value="200">200 Level</option>
+        <option value="300" selected>300 Level</option>
+        <option value="400">400 Level</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Academic Semester</label>
+      <select name="semester" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:ring-1 focus:ring-[#1B4D3E]">
+        <option value="1" selected>Harmattan Semester</option>
+        <option value="2">Rain Semester</option>
+      </select>
+    </div>
+
+    <div class="pt-4">
+      <button type="submit" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition">
+        Filter
+      </button>
+    </div>
+  </form>
+
+  <div class="text-right">
+    <span class="text-[11px] font-bold uppercase text-slate-400 block">Enrolled Total Units</span>
+    <span class="text-sm font-black text-[#1B4D3E]">21 Credit Units</span>
+  </div>
+</div>
+
+<!-- Desktop Timetable Matrix (Visible on md and up) -->
+<div class="hidden md:block bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse text-xs min-w-[1000px]">
+      <thead>
+        <tr class="bg-[#F8F9FA] text-slate-700 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+          <th class="p-3 border-r border-[#E2E8F0] text-center w-28 bg-[#1B4D3E] text-white">Day</th>
+          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">08:00 - 10:00</th>
+          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">10:00 - 12:00</th>
+          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">12:00 - 14:00</th>
+          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">14:00 - 16:00</th>
+          <th class="p-3 text-center w-36">16:00 - 18:00</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#E2E8F0] text-slate-800">
+        
+        <!-- Monday -->
+        <tr class="h-28">
+          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+            Monday
+          </td>
+          <!-- CSC 301 -->
+          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
+            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-[#1B4D3E] text-sm">CSC 301</span>
+                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
+                </div>
+                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Systems Analysis</div>
+              </div>
+              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="font-mono font-bold text-slate-800">LT-AG</span>
+                <span>Dr. Aminu</span>
+              </div>
+            </div>
+          </td>
+          <!-- CSC 305 -->
+          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
+            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-[#1B4D3E] text-sm">CSC 305</span>
+                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
+                </div>
+                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Database Systems</div>
+              </div>
+              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="font-mono font-bold text-slate-800">TWIN-A</span>
+                <span>Mal. Haruna</span>
+              </div>
+            </div>
+          </td>
+          <!-- Break -->
+          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-bold">
+            Midday Break
+          </td>
+          <!-- CSC 311 Lab -->
+          <td class="p-2 border-r border-[#E2E8F0] align-top bg-[#5C4033]/5">
+            <div class="h-full p-2.5 rounded-lg bg-white border border-[#5C4033]/40 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-[#5C4033] text-sm">CSC 311</span>
+                  <span class="px-1.5 py-0.2 bg-[#5C4033]/15 text-[#5C4033] rounded text-[9px] font-bold">LAB (2 CU)</span>
+                </div>
+                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Operating Systems Lab</div>
+              </div>
+              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="font-mono font-bold text-[#5C4033]">LAB-PTDF</span>
+                <span>Dr. Garba</span>
+              </div>
+            </div>
+          </td>
+          <td class="p-2 bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Free
+          </td>
+        </tr>
+
+        <!-- Tuesday -->
+        <tr class="h-28">
+          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+            Tuesday
+          </td>
+          <!-- SE 301 -->
+          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
+            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-[#1B4D3E] text-sm">SE 301</span>
+                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
+                </div>
+                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Software Architecture</div>
+              </div>
+              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="font-mono font-bold text-slate-800">TWIN-B</span>
+                <span>Dr. Fatima</span>
+              </div>
+            </div>
+          </td>
+          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Free Window
+          </td>
+          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Break
+          </td>
+          <!-- CSC 307 -->
+          <td class="p-2 border-r border-[#E2E8F0] align-top bg-amber-50/40">
+            <div class="h-full p-2.5 rounded-lg bg-white border border-amber-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-[#D97706] text-sm">CSC 307</span>
+                  <span class="px-1.5 py-0.2 bg-amber-100 text-amber-900 rounded text-[9px] font-bold">3 CU</span>
+                </div>
+                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Algorithms & Complexity</div>
+              </div>
+              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="font-mono font-bold text-slate-800">TWIN-A</span>
+                <span>Dr. Aminu</span>
+              </div>
+            </div>
+          </td>
+          <td class="p-2 bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Free
+          </td>
+        </tr>
+
+        <!-- Friday -->
+        <tr class="h-28">
+          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
+            Friday
+          </td>
+          <!-- CSC 309 -->
+          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
+            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-[#1B4D3E] text-sm">CSC 309</span>
+                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
+                </div>
+                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Artificial Intelligence</div>
+              </div>
+              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="font-mono font-bold text-slate-800">TWIN-B</span>
+                <span>Prof. B. Dutse</span>
+              </div>
+            </div>
+          </td>
+          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Self Study
+          </td>
+          <!-- Protected Juma'at -->
+          <td class="p-2 border-r border-[#E2E8F0] bg-amber-100/60 flex items-center justify-center text-amber-900 font-bold text-center">
+            Friday Juma'at Congregation Prayer Window (12:30 - 14:00)
+          </td>
+          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Free
+          </td>
+          <td class="p-2 bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
+            Free
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if allocations %}
+<div class="hidden md:block bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+  <div class="p-4 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center justify-between">
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">
+      Official Timetable Course Schedule ({{ allocations|length }})
+    </h3>
+    <span class="text-[11px] font-mono text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Senate Approved</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs">
+      <thead>
+        <tr class="bg-slate-50 text-slate-600 font-bold border-b border-[#E2E8F0]">
+          <th class="p-3 pl-4">Course Code</th>
+          <th class="p-3">Course Title</th>
+          <th class="p-3 text-center">Credit Units</th>
+          <th class="p-3">Day & Time Slot</th>
+          <th class="p-3">Lecture Hall</th>
+          <th class="p-3">Assigned Lecturer</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-slate-700">
+        {% for a in allocations %}
+        <tr class="hover:bg-slate-50">
+          <td class="p-3 pl-4 font-mono font-bold text-[#1B4D3E]">{{ a.course.code }}</td>
+          <td class="p-3 font-semibold text-slate-900">{{ a.course.title }}</td>
+          <td class="p-3 text-center font-bold">{{ a.course.credit_units }} CU</td>
+          <td class="p-3 font-medium">{{ a.get_day_of_week_display }}, {{ a.slot.label }}</td>
+          <td class="p-3 font-mono text-emerald-800 font-bold">{{ a.venue.code }}</td>
+          <td class="p-3">{{ a.lecturer.user.get_full_name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Mobile Agenda View (Visible on small screens) -->
+<div class="block md:hidden space-y-4">
+  <div class="text-xs font-bold uppercase text-slate-500 tracking-wider">
+    Mobile Agenda Stream
+  </div>
+
+  <!-- Monday Card -->
+  <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-sm space-y-3">
+    <div class="font-black text-sm text-[#1B4D3E] pb-2 border-b border-slate-100">
+      MONDAY
+    </div>
+    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-[#1B4D3E] text-xs">CSC 301 &bull; Systems Analysis</span>
+        <span class="text-[10px] font-mono text-emerald-800 font-bold">08:00 - 10:00</span>
+      </div>
+      <div class="text-[11px] text-slate-600 mt-1">Venue: Abubakar Gimba Theatre &bull; Dr. Aminu</div>
+    </div>
+    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-[#1B4D3E] text-xs">CSC 305 &bull; Database Systems</span>
+        <span class="text-[10px] font-mono text-emerald-800 font-bold">10:00 - 12:00</span>
+      </div>
+      <div class="text-[11px] text-slate-600 mt-1">Venue: Twin Theatre A &bull; Mal. Haruna</div>
+    </div>
+    <div class="p-3 rounded-lg bg-[#5C4033]/10 border border-[#5C4033]/30">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-[#5C4033] text-xs">CSC 311 &bull; Operating Systems Lab</span>
+        <span class="text-[10px] font-mono text-[#5C4033] font-bold">14:00 - 16:00</span>
+      </div>
+      <div class="text-[11px] text-slate-600 mt-1">Venue: PTDF Lab &bull; Dr. Garba</div>
+    </div>
+  </div>
+
+  <!-- Tuesday Card -->
+  <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-sm space-y-3">
+    <div class="font-black text-sm text-[#1B4D3E] pb-2 border-b border-slate-100">
+      TUESDAY
+    </div>
+    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-[#1B4D3E] text-xs">SE 301 &bull; Software Architecture</span>
+        <span class="text-[10px] font-mono text-emerald-800 font-bold">08:00 - 10:00</span>
+      </div>
+      <div class="text-[11px] text-slate-600 mt-1">Venue: Twin Theatre B &bull; Dr. Fatima</div>
+    </div>
+    <div class="p-3 rounded-lg bg-amber-50 border border-amber-200">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-[#D97706] text-xs">CSC 307 &bull; Algorithms & Complexity</span>
+        <span class="text-[10px] font-mono text-amber-900 font-bold">14:00 - 16:00</span>
+      </div>
+      <div class="text-[11px] text-slate-600 mt-1">Venue: Twin Theatre A &bull; Dr. Aminu</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

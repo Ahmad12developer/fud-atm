@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Request Schedule Adjustment | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Staff Services
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Faculty of Computing &bull; Timetable Committee</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Submit Structured Schedule Adjustment Ticket
+    </h1>
+    <p class="text-xs text-slate-500">
+      FUD Senate mandates structured requests with clear justifications to ensure 0-clash timetable integrity.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <a href="/lecturer/tickets/"
+       class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-sm transition">
+      View Submitted Tickets
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="bg-white rounded-2xl border border-[#E2E8F0] shadow-xl overflow-hidden">
+    
+    <!-- Institutional Guidance Banner -->
+    <div class="p-5 bg-[#1B4D3E] text-white border-b-4 border-[#5C4033]">
+      <h2 class="text-sm font-bold uppercase tracking-wide">
+        Formal Adjustment Protocol & Criteria
+      </h2>
+      <p class="text-xs text-emerald-100 mt-1 leading-relaxed">
+        Adjustment requests are verified against real-time venue availability and cohort clashes by the Faculty Timetable Officer before being committed to the master university schedule.
+      </p>
+    </div>
+
+    <!-- The Structured Form with Strict CSRF Protection -->
+    <form method="POST" action="/lecturer/request-change/" class="p-6 sm:p-8 space-y-6 text-xs">
+      {% csrf_token %}
+
+      <!-- Input 1: Assigned Course Selection -->
+      <div>
+        <label for="course_select" class="block font-bold uppercase text-slate-700 mb-1.5">
+          Select Assigned Teaching Course Unit <span class="text-red-500">*</span>
+        </label>
+        <select id="course_select" name="course_code" required onchange="updateCurrentSlotDetails(this.value)"
+                class="w-full p-3 rounded-lg border border-slate-300 font-semibold text-slate-900 focus:ring-2 focus:ring-[#1B4D3E]">
+          <option value="CSC 301" selected>CSC 301 - Structured Systems Analysis (Current: Mon 08:00 - 10:00 @ LT-AG)</option>
+          <option value="CSC 307">CSC 307 - Algorithms & Complexity (Current: Tue 14:00 - 16:00 @ TWIN-A)</option>
+        </select>
+        <span class="text-[11px] text-slate-500 mt-1 block">
+          Only courses officially assigned to your staff profile by the Head of Department appear here.
+        </span>
+      </div>
+
+      <!-- Current Allocated Slot Display Card -->
+      <div class="p-4 rounded-xl bg-[#F8F9FA] border border-slate-200 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase text-slate-400 block">Current Timetable Allocation</span>
+          <span id="display_current_slot" class="text-xs font-mono font-bold text-slate-800">
+            Monday &bull; 08:00 AM - 10:00 AM &bull; Abubakar Gimba Lecture Theatre (350 Seats)
+          </span>
+        </div>
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700 uppercase">
+          Allocated
+        </span>
+      </div>
+
+      <!-- Input 2: Target Issue Category -->
+      <div>
+        <label for="issue_category" class="block font-bold uppercase text-slate-700 mb-1.5">
+          Target Issue Classification <span class="text-red-500">*</span>
+        </label>
+        <select id="issue_category" name="issue_category" required
+                class="w-full p-3 rounded-lg border border-slate-300 font-medium text-slate-900 focus:ring-2 focus:ring-[#1B4D3E]">
+          <option value="CAPACITY">Venue Capacity Deficit (Enrolled students exceed room capacity)</option>
+          <option value="TIME_CONFLICT">Time Slot Conflict (Cross-faculty overlap or joint cohort clash)</option>
+          <option value="EQUIPMENT">Specialized Equipment Needed (Projector, Inverter, Computer Lab)</option>
+          <option value="MEDICAL_RELIGIOUS">Medical / Approved Senate Exemption</option>
+        </select>
+      </div>
+
+      <!-- Input 3: Preferred Solution & Timing -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="preferred_day" class="block font-bold uppercase text-slate-700 mb-1.5">
+            Preferred Alternative Day <span class="text-red-500">*</span>
+          </label>
+          <select id="preferred_day" name="preferred_day" required
+                  class="w-full p-3 rounded-lg border border-slate-300 font-medium text-slate-900">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday" selected>Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday (Excluding 12:30-14:00)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="preferred_time" class="block font-bold uppercase text-slate-700 mb-1.5">
+            Preferred Alternative Time Window <span class="text-red-500">*</span>
+          </label>
+          <select id="preferred_time" name="preferred_time" required
+                  class="w-full p-3 rounded-lg border border-slate-300 font-medium text-slate-900 font-mono">
+            <option value="08:00 - 10:00">08:00 AM - 10:00 AM</option>
+            <option value="10:00 - 12:00">10:00 AM - 12:00 PM</option>
+            <option value="14:00 - 16:00" selected>02:00 PM - 04:00 PM</option>
+            <option value="16:00 - 18:00">04:00 PM - 06:00 PM</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="preferred_venue" class="block font-bold uppercase text-slate-700 mb-1.5">
+          Requested Alternative Venue (Optional)
+        </label>
+        <select id="preferred_venue" name="preferred_venue"
+                class="w-full p-3 rounded-lg border border-slate-300 font-medium text-slate-900">
+          <option value="NO_PREFERENCE">Any Venue with Adequate Capacity</option>
+          <option value="LT-AG">Abubakar Gimba Lecture Theatre (350 Seats)</option>
+          <option value="TWIN-A">Faculty Twin Lecture Theatre A (200 Seats)</option>
+          <option value="TWIN-B">Faculty Twin Lecture Theatre B (200 Seats)</option>
+          <option value="LAB-PTDF">PTDF Software Engineering Lab (80 PCs)</option>
+        </select>
+      </div>
+
+      <!-- Input 4: Compulsory Justification Textarea -->
+      <div>
+        <label for="justification" class="block font-bold uppercase text-slate-700 mb-1.5">
+          Administrative Justification & Evidence <span class="text-red-500">*</span>
+        </label>
+        <textarea id="justification" name="justification" rows="4" required
+                  placeholder="Provide explicit rationale for this change request (e.g. registration count exceeded venue capacity by 45 students, or clashing with joint course)..."
+                  class="w-full p-3 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-[#1B4D3E]"></textarea>
+        <p class="text-[11px] text-slate-500 mt-1">
+          Must be detailed and factual. Arbitrary or uncorroborated requests will be rejected by the Faculty Timetable Committee.
+        </p>
+      </div>
+
+      <!-- Form Submission Controls -->
+      <div class="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+        <a href="/lecturer/schedule/" class="text-slate-500 hover:text-slate-800 font-bold">
+          &larr; Cancel
+        </a>
+
+        <button type="submit"
+                class="px-6 py-2.5 rounded-lg bg-[#1B4D3E] hover:bg-[#13392E] text-white font-bold text-xs uppercase tracking-wider shadow-md transition">
+          Submit Formal Ticket &rarr;
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  function updateCurrentSlotDetails(course) {
+    const disp = document.getElementById('display_current_slot');
+    if (course === 'CSC 301') {
+      disp.textContent = 'Monday • 08:00 AM - 10:00 AM • Abubakar Gimba Lecture Theatre (350 Seats)';
+    } else if (course === 'CSC 307') {
+      disp.textContent = 'Tuesday • 02:00 PM - 04:00 PM • Twin Lecture Theatre A (200 Seats)';
+    }
+  }
+</script>
+{% endblock %}

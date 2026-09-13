@@ -1,0 +1,738 @@
+
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#F8F9FA]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Automated Timetable Management System - Federal University Dutse (FUD), Jigawa State">
+  <meta name="institution" content="Federal University Dutse">
+  <meta name="csrf-token" content="nNH1MNJymqEaYOwaLwiMSaaOcvF04VnvzIpHwk0bdCVopVJPgbUjBw1KzOyQOAfu">
+  <title>Faculty Resources CRUD | FUD ATMS</title>
+
+  <!-- Tailwind CSS CDN with FUD Brand Theme -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fud: {
+              green: '#1B4D3E',
+              'green-dark': '#13392E',
+              'green-light': '#246552',
+              brown: '#5C4033',
+              'brown-light': '#755343',
+              bg: '#F8F9FA',
+              surface: '#FFFFFF',
+              border: '#E2E8F0',
+            },
+            slate: {
+              900: '#0F172A',
+              500: '#64748B',
+            },
+            emerald: {
+              600: '#059669',
+            },
+            amber: {
+              600: '#D97706',
+            },
+            crimson: {
+              600: '#DC2626',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Institutional Fallback & Utility Styles -->
+  <link rel="stylesheet" href="/static/css/fud-theme.css">
+
+  
+</head>
+<body class="h-full font-sans antialiased text-[#0F172A] bg-[#F8F9FA] flex flex-col selection:bg-[#1B4D3E] selection:text-white">
+
+  
+  <!-- Top Navigation Bar -->
+  <!-- FUD Institutional Topbar Navigation -->
+<header class="bg-[#1B4D3E] text-white border-b-4 border-[#5C4033] shadow-md sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Left: Institutional Brand Identity -->
+      <div class="flex items-center space-x-3">
+        <!-- SVG Emblem of Federal University Dutse -->
+        <a href="/" class="flex items-center space-x-3 group focus:outline-none focus:ring-2 focus:ring-amber-400 rounded-lg p-1">
+          <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow border border-amber-300">
+            <svg class="w-8 h-8 text-[#1B4D3E]" viewBox="0 0 24 24" fill="currentColor">
+              <!-- Institutional Emblem Silhouette -->
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1B4D3E"/>
+              <path d="M4 9.5V15.5C4 18.5 7.5 21 12 21C16.5 21 20 18.5 20 15.5V9.5L12 14L4 9.5Z" fill="#5C4033" opacity="0.9"/>
+              <circle cx="12" cy="7" r="1.5" fill="#D97706"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold tracking-tight text-lg text-white group-hover:text-amber-200 transition-colors">
+                FEDERAL UNIVERSITY DUTSE
+              </span>
+              <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-amber-500 text-slate-900 rounded">
+                ATMS
+              </span>
+            </div>
+            <p class="text-xs text-emerald-100 font-medium tracking-wide">
+              Automated Timetable Management System &bull; <span class="italic text-amber-200">Knowledge, Excellence & Service</span>
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Center: Academic Session Pill -->
+      <div class="hidden md:flex items-center space-x-2 bg-[#13392E] px-3.5 py-1.5 rounded-full border border-emerald-700/50 shadow-inner">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-semibold text-emerald-100 uppercase tracking-wider">
+          2025/2026 Academic Session &bull; Harmattan (1st) Semester
+        </span>
+      </div>
+
+      <!-- Right: User Profile, Role Badge & Logout Form -->
+      <div class="flex items-center space-x-4">
+        
+        <!-- Role Switcher for Interactive Demo / Evaluation -->
+        <div class="relative group">
+          <button type="button" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium text-emerald-200 hover:text-white bg-[#13392E] hover:bg-[#246552] px-2.5 py-1.5 rounded border border-emerald-700 transition">
+            <span>Switch Role Scope</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-xl py-1 text-slate-900 hidden group-hover:block border border-slate-200 z-50">
+            <div class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+              Deterministic Role Scope
+            </div>
+            <a href="/role-switch/CENTRAL_ADMIN/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Central Admin (FUD/ADM/...)
+            </a>
+            <a href="/role-switch/FACULTY_ADMIN/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Faculty Admin (FUD/SCI/...)
+            </a>
+            <a href="/role-switch/LECTURER/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Lecturer (FUD/LEC/...)
+            </a>
+            <a href="/role-switch/STUDENT/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Student (FUD/CST/...)
+            </a>
+          </div>
+        </div>
+
+        <!-- Identity & Role Indicator -->
+        <div class="flex items-center space-x-3 border-l border-emerald-700/60 pl-4">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs font-semibold text-white tracking-wide">
+              Engr. Dr. A. S. Dutse
+            </div>
+            <div class="flex items-center justify-end space-x-1 mt-0.5">
+              <span class="text-[11px] text-emerald-200 font-mono">
+                FUD/FAC/2025/001
+              </span>
+              <span class="px-1.5 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded text-[10px] font-bold uppercase">
+                Faculty Admin
+                
+              </span>
+            </div>
+          </div>
+
+          <!-- User Avatar Placeholder with FUD Color -->
+          <div class="w-9 h-9 rounded-full bg-[#5C4033] border-2 border-amber-400/60 flex items-center justify-center text-white font-bold text-sm shadow">
+            E
+          </div>
+
+          <!-- Strict CSRF-Protected Logout Button -->
+          <form action="/logout/" method="POST" class="inline">
+            <input type="hidden" name="csrfmiddlewaretoken" value="nNH1MNJymqEaYOwaLwiMSaaOcvF04VnvzIpHwk0bdCVopVJPgbUjBw1KzOyQOAfu">
+            <button type="submit" title="Secure Logout" class="p-1.5 text-emerald-200 hover:text-white hover:bg-[#13392E] rounded-md transition focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <span class="sr-only">Sign out</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</header>
+
+
+  <!-- Main Viewport Container -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Server-Side Role-Gated Sidebar Navigation -->
+    <!-- Server-Side Role-Gated Sidebar Navigation -->
+<aside class="w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between flex-shrink-0 shadow-sm">
+  <div class="p-4 space-y-6">
+
+    <!-- Role Scope Banner -->
+    <div class="px-3 py-2.5 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0]">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Current Scope</div>
+      <div class="text-xs font-bold text-[#1B4D3E] truncate">
+        
+          Faculty of Computing
+        
+      </div>
+    </div>
+
+    <!-- Navigation Groups Strictly Gated by Server-Side Role -->
+    <nav class="space-y-1">
+
+      <!-- =============================================================== -->
+      <!-- CENTRAL ADMIN NAVIGATION                                         -->
+      <!-- =============================================================== -->
+      
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#5C4033]">
+          Faculty Administration
+        </div>
+
+        <a href="/faculty/dashboard/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span>Faculty Dashboard</span>
+        </a>
+
+        <a href="/faculty/resources/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors bg-[#1B4D3E] text-white shadow-sm">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          <span>Resources & Venues</span>
+        </a>
+
+        <a href="/faculty/generate/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <span>Generate Timetable</span>
+        </a>
+
+        <a href="/faculty/matrix/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+          </svg>
+          <span>Schedule Matrix & Overrides</span>
+        </a>
+
+        <a href="/faculty/inbox/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+          </svg>
+          <div class="flex-1 flex items-center justify-between">
+            <span>Request Inbox</span>
+            <span class="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-slate-900 rounded-full">3</span>
+          </div>
+        </a>
+
+      <!-- =============================================================== -->
+      <!-- LECTURER NAVIGATION                                             -->
+      <!-- =============================================================== -->
+      
+
+    </nav>
+  </div>
+
+  <!-- Sidebar Footer: University Portal Badge -->
+  <div class="p-4 border-t border-[#E2E8F0] bg-[#F8F9FA] text-[11px] text-slate-500 space-y-1">
+    <div class="flex items-center space-x-1.5 font-bold text-[#1B4D3E]">
+      <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      </svg>
+      <span>FUD ATMS Core v2.4</span>
+    </div>
+    <div class="text-slate-400">
+      ICT Directorate &bull; Jigawa State
+    </div>
+  </div>
+</aside>
+
+
+    <!-- Main Content Workspace -->
+    <main id="main-content" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8F9FA] focus:outline-none" tabindex="-1">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Django Flash Alert Messages -->
+        <!-- Django Flash Alert Messages Component -->
+
+
+
+        <!-- Role Breadcrumb / Header Area -->
+        
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Resource Management
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Faculty of Computing & IT</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Academic Venues, Courses & Staff Inventory
+    </h1>
+    <p class="text-xs text-slate-500">
+      Configure infrastructural capacities, curriculum credit limits, and faculty teaching allocations.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <button type="button" onclick="openAddResourceModal()"
+            class="px-4 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span>Add New Resource</span>
+    </button>
+  </div>
+</div>
+
+
+        <!-- Dynamic View Content -->
+        
+<!-- Tab Navigation Bar -->
+<div class="border-b border-[#E2E8F0] flex space-x-8 text-xs font-bold">
+  <button type="button" onclick="switchResourceTab('venues')" id="tab-btn-venues"
+          class="pb-3 border-b-2 border-[#1B4D3E] text-[#1B4D3E] flex items-center space-x-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    <span>Lecture Venues & Laboratories (18)</span>
+  </button>
+
+  <button type="button" onclick="switchResourceTab('courses')" id="tab-btn-courses"
+          class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+    <span>Curriculum Courses (114)</span>
+  </button>
+
+  <button type="button" onclick="switchResourceTab('lecturers')" id="tab-btn-lecturers"
+          class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    <span>Academic Staff & Lecturers (42)</span>
+  </button>
+</div>
+
+<!-- =================================================================== -->
+<!-- TAB 1: VENUES                                                       -->
+<!-- =================================================================== -->
+<div id="tab-pane-venues" class="space-y-4">
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3.5 pl-5">Venue Code</th>
+            <th class="p-3.5">Venue Name</th>
+            <th class="p-3.5">Building Location</th>
+            <th class="p-3.5 text-center">Capacity</th>
+            <th class="p-3.5">Equipment / Facilities</th>
+            <th class="p-3.5 text-center">Status</th>
+            <th class="p-3.5 pr-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">LT-AG</td>
+            <td class="p-3.5 font-bold text-slate-900">Abubakar Gimba Lecture Theatre</td>
+            <td class="p-3.5">Central Academic Zone</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">350 seats</td>
+            <td class="p-3.5">
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">Projector</span>
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">Sound System</span>
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px]">Dual AC</span>
+            </td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold uppercase">Active</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right space-x-2">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">TWIN-A</td>
+            <td class="p-3.5 font-bold text-slate-900">Faculty Twin Lecture Theatre A</td>
+            <td class="p-3.5">Faculty of Science Complex</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">200 seats</td>
+            <td class="p-3.5">
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">Projector</span>
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px]">AC</span>
+            </td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold uppercase">Active</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right space-x-2">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">LAB-PTDF</td>
+            <td class="p-3.5 font-bold text-slate-900">PTDF Software Engineering Lab</td>
+            <td class="p-3.5">Computing Wing, Level 2</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">80 workstations</td>
+            <td class="p-3.5">
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">80 PCs</span>
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1">Gigabit LAN</span>
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px]">Backup Inverter</span>
+            </td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold uppercase">Active</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right space-x-2">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- TAB 2: COURSES                                                      -->
+<!-- =================================================================== -->
+<div id="tab-pane-courses" class="space-y-4 hidden">
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3.5 pl-5">Course Code</th>
+            <th class="p-3.5">Course Title</th>
+            <th class="p-3.5 text-center">Credit Units</th>
+            <th class="p-3.5 text-center">Level</th>
+            <th class="p-3.5 text-center">Cohort Size</th>
+            <th class="p-3.5">Assigned Lecturer</th>
+            <th class="p-3.5 pr-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">CSC 101</td>
+            <td class="p-3.5 font-bold text-slate-900">Introduction to Computer Science & Problem Solving</td>
+            <td class="p-3.5 text-center font-mono font-bold">3 CU</td>
+            <td class="p-3.5 text-center">100L</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">320</td>
+            <td class="p-3.5 font-medium">Prof. B. Dutse</td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">CSC 201</td>
+            <td class="p-3.5 font-bold text-slate-900">Computer Programming I (C++ / Python)</td>
+            <td class="p-3.5 text-center font-mono font-bold">3 CU</td>
+            <td class="p-3.5 text-center">200L</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">210</td>
+            <td class="p-3.5 font-medium">Dr. U. Garba</td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">CSC 301</td>
+            <td class="p-3.5 font-bold text-slate-900">Structured Systems Analysis & Design</td>
+            <td class="p-3.5 text-center font-mono font-bold">3 CU</td>
+            <td class="p-3.5 text-center">300L</td>
+            <td class="p-3.5 text-center font-mono font-bold text-slate-900">185</td>
+            <td class="p-3.5 font-medium">Dr. Aminu Sani Dutse</td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- TAB 3: LECTURERS                                                    -->
+<!-- =================================================================== -->
+<div id="tab-pane-lecturers" class="space-y-4 hidden">
+  <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+            <th class="p-3.5 pl-5">Staff ID</th>
+            <th class="p-3.5">Full Name</th>
+            <th class="p-3.5">Academic Rank</th>
+            <th class="p-3.5">Department</th>
+            <th class="p-3.5 text-center">Max Weekly Load</th>
+            <th class="p-3.5 text-center">Preferences</th>
+            <th class="p-3.5 pr-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">FUD/LEC/2024/012</td>
+            <td class="p-3.5 font-bold text-slate-900">Prof. Bello Dutse</td>
+            <td class="p-3.5">Professor</td>
+            <td class="p-3.5">Computer Science</td>
+            <td class="p-3.5 text-center font-mono font-bold">6 Hours</td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">Submitted</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">View Profile</button>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">FUD/LEC/2024/088</td>
+            <td class="p-3.5 font-bold text-slate-900">Dr. Aminu Sani Dutse</td>
+            <td class="p-3.5">Senior Lecturer</td>
+            <td class="p-3.5">Computer Science</td>
+            <td class="p-3.5 text-center font-mono font-bold">9 Hours</td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">Submitted</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">View Profile</button>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono font-bold text-[#1B4D3E]">FUD/LEC/2024/104</td>
+            <td class="p-3.5 font-bold text-slate-900">Mal. Kabiru Haruna</td>
+            <td class="p-3.5">Lecturer I</td>
+            <td class="p-3.5">Software Engineering</td>
+            <td class="p-3.5 text-center font-mono font-bold">12 Hours</td>
+            <td class="p-3.5 text-center">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">Submitted</span>
+            </td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" class="text-slate-600 hover:text-[#1B4D3E] font-bold">View Profile</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Resource Modal Dialog with Strict CSRF Protection -->
+<dialog id="addResourceModal" class="rounded-xl shadow-2xl p-0 border border-[#E2E8F0] max-w-lg w-full text-slate-900">
+  <div class="bg-white rounded-xl overflow-hidden">
+    <div class="p-5 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center justify-between">
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Register New Academic Resource</h3>
+        <p class="text-xs text-slate-500">Federal University Dutse Resource Inventory</p>
+      </div>
+      <button type="button" onclick="closeModal('addResourceModal')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+    </div>
+
+    <form method="POST" action="/faculty/resources/add/" class="p-6 space-y-4 text-xs">
+      <input type="hidden" name="csrfmiddlewaretoken" value="nNH1MNJymqEaYOwaLwiMSaaOcvF04VnvzIpHwk0bdCVopVJPgbUjBw1KzOyQOAfu">
+
+      <div>
+        <label class="block font-bold uppercase text-slate-600 mb-1">Resource Classification</label>
+        <select name="resource_type" class="w-full p-2 rounded-lg border border-slate-300 font-medium">
+          <option value="VENUE">Lecture Venue / Laboratory</option>
+          <option value="COURSE">Curriculum Course Unit</option>
+          <option value="STAFF">Academic Staff / Lecturer</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Code / Identifier</label>
+          <input type="text" name="code" placeholder="e.g. TWIN-C or CSC 205" required
+                 class="w-full p-2 rounded-lg border border-slate-300 font-mono">
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Capacity / Credit Units</label>
+          <input type="number" name="capacity" placeholder="e.g. 150" required
+                 class="w-full p-2 rounded-lg border border-slate-300">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold uppercase text-slate-600 mb-1">Official Name / Title</label>
+        <input type="text" name="name" placeholder="Full descriptive title" required
+               class="w-full p-2 rounded-lg border border-slate-300">
+      </div>
+
+      <div>
+        <label class="block font-bold uppercase text-slate-600 mb-1">Building Location / Department</label>
+        <input type="text" name="location" placeholder="e.g. Faculty of Science New Complex" required
+               class="w-full p-2 rounded-lg border border-slate-300">
+      </div>
+
+      <div class="p-4 bg-[#F8F9FA] border-t border-[#E2E8F0] flex justify-end space-x-3 -mx-6 -mb-6 mt-4">
+        <button type="button" onclick="closeModal('addResourceModal')"
+                class="px-4 py-2 font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg">
+          Cancel
+        </button>
+        <button type="submit"
+                class="px-4 py-2 font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow">
+          Register Resource
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+  function switchResourceTab(tabId) {
+    const tabs = ['venues', 'courses', 'lecturers'];
+    tabs.forEach(t => {
+      const pane = document.getElementById('tab-pane-' + t);
+      const btn = document.getElementById('tab-btn-' + t);
+      if (t === tabId) {
+        pane.classList.remove('hidden');
+        btn.classList.add('border-[#1B4D3E]', 'text-[#1B4D3E]');
+        btn.classList.remove('border-transparent', 'text-slate-500');
+      } else {
+        pane.classList.add('hidden');
+        btn.classList.remove('border-[#1B4D3E]', 'text-[#1B4D3E]');
+        btn.classList.add('border-transparent', 'text-slate-500');
+      }
+    });
+  }
+
+  function openAddResourceModal() {
+    openModal('addResourceModal');
+  }
+</script>
+
+      </div>
+    </main>
+  </div>
+  
+
+  <!-- Reusable Confirmation Dialog -->
+  <!-- Reusable Confirmation Dialog for Destructive / Critical Actions -->
+<dialog id="confirmModal" class="rounded-xl shadow-2xl p-0 border border-[#E2E8F0] backdrop:bg-slate-900/60 max-w-md w-full text-slate-900">
+  <div class="bg-white rounded-xl overflow-hidden">
+    
+    <!-- Modal Header -->
+    <div class="p-5 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center space-x-3">
+      <div id="confirmModalIcon" class="w-10 h-10 rounded-full bg-crimson-100 text-[#DC2626] flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900">
+          Confirm Action
+        </h3>
+        <p class="text-xs text-slate-500">
+          Federal University Dutse Security Protocol
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <p id="confirmModalMessage" class="text-sm text-slate-700 leading-relaxed">
+        Are you sure you want to proceed with this operation? This action will be logged in the Institutional Audit trail.
+      </p>
+    </div>
+
+    <!-- Modal Actions with CSRF Protection -->
+    <form id="confirmModalForm" method="POST" action="">
+      <input type="hidden" name="csrfmiddlewaretoken" value="nNH1MNJymqEaYOwaLwiMSaaOcvF04VnvzIpHwk0bdCVopVJPgbUjBw1KzOyQOAfu">
+      <input type="hidden" name="action_target_id" id="confirmModalTargetId" value="">
+      <div class="p-4 bg-[#F8F9FA] border-t border-[#E2E8F0] flex justify-end space-x-3">
+        <button type="button" onclick="closeModal('confirmModal')"
+                class="px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg shadow-sm transition">
+          Cancel
+        </button>
+        <button type="submit" id="confirmModalBtn"
+                class="px-4 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow transition focus:ring-2 focus:ring-red-400">
+          Confirm Operation
+        </button>
+      </div>
+    </form>
+
+  </div>
+</dialog>
+
+<script>
+  /**
+   * Helper to trigger confirmation modal with dynamic parameters
+   */
+  function showConfirmModal(options) {
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMessage');
+    const formEl = document.getElementById('confirmModalForm');
+    const targetEl = document.getElementById('confirmModalTargetId');
+    const btnEl = document.getElementById('confirmModalBtn');
+
+    if (titleEl && options.title) titleEl.textContent = options.title;
+    if (msgEl && options.message) msgEl.textContent = options.message;
+    if (formEl && options.actionUrl) formEl.action = options.actionUrl;
+    if (targetEl && options.targetId) targetEl.value = options.targetId;
+    if (btnEl && options.buttonText) btnEl.textContent = options.buttonText;
+    if (btnEl && options.buttonClass) btnEl.className = options.buttonClass;
+
+    openModal('confirmModal');
+  }
+</script>
+
+
+  <!-- Core Security & Interaction Primitives -->
+  <script>
+    /**
+     * Extracts CSRF token safely from DOM or cookies
+     */
+    function getCsrfToken() {
+      const metaTag = document.querySelector('meta[name="csrf-token"]');
+      if (metaTag && metaTag.content) {
+        return metaTag.content;
+      }
+      const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (tokenInput) {
+        return tokenInput.value;
+      }
+      const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+      return cookieMatch ? cookieMatch[1] : '';
+    }
+
+    /**
+     * Generic Modal Controller for Accessible HTML5 <dialog>
+     */
+    function openModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else if (dialog) {
+        dialog.classList.remove('hidden');
+      }
+    }
+
+    function closeModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.close === 'function') {
+        dialog.close();
+      } else if (dialog) {
+        dialog.classList.add('hidden');
+      }
+    }
+
+    // Dismiss message alerts
+    function dismissAlert(alertEl) {
+      if (alertEl) {
+        alertEl.style.opacity = '0';
+        setTimeout(() => alertEl.remove(), 200);
+      }
+    }
+  </script>
+
+  
+</body>
+</html>

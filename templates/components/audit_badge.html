@@ -1,0 +1,60 @@
+<!-- Reusable Audit Severity & Action Badges -->
+{% if badge_type == 'severity' %}
+  {% if value == 'CRITICAL' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-[#DC2626] border border-red-200">
+      <span class="w-1.5 h-1.5 mr-1 rounded-full bg-[#DC2626]"></span>
+      Critical
+    </span>
+  {% elif value == 'HIGH' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-[#D97706] border border-amber-200">
+      <span class="w-1.5 h-1.5 mr-1 rounded-full bg-[#D97706]"></span>
+      High
+    </span>
+  {% elif value == 'MEDIUM' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-100 text-blue-800 border border-blue-200">
+      <span class="w-1.5 h-1.5 mr-1 rounded-full bg-blue-600"></span>
+      Medium
+    </span>
+  {% elif value == 'LOW' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-[#059669] border border-emerald-200">
+      <span class="w-1.5 h-1.5 mr-1 rounded-full bg-[#059669]"></span>
+      Low
+    </span>
+  {% else %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+      <span class="w-1.5 h-1.5 mr-1 rounded-full bg-slate-500"></span>
+      {{ value|default:"Info" }}
+    </span>
+  {% endif %}
+
+{% elif badge_type == 'action' %}
+  {% if value == 'OVERRIDE' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#5C4033]/15 text-[#5C4033] border border-[#5C4033]/30">
+      Override
+    </span>
+  {% elif value == 'GENERATE' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#1B4D3E]/15 text-[#1B4D3E] border border-[#1B4D3E]/30">
+      Generate
+    </span>
+  {% elif value == 'APPROVE' or value == 'APPROVED' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-[#059669] border border-emerald-300">
+      Approved
+    </span>
+  {% elif value == 'REJECT' or value == 'REJECTED' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-[#DC2626] border border-red-300">
+      Rejected
+    </span>
+  {% elif value == 'PENDING' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-[#D97706] border border-amber-300">
+      Pending
+    </span>
+  {% elif value == 'CLASH_FLAG' %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-[#DC2626] border border-red-300">
+      Clash Flagged
+    </span>
+  {% else %}
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-300">
+      {{ value }}
+    </span>
+  {% endif %}
+{% endif %}

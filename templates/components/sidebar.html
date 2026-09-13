@@ -1,0 +1,221 @@
+<!-- Server-Side Role-Gated Sidebar Navigation -->
+<aside class="w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between flex-shrink-0 shadow-sm">
+  <div class="p-4 space-y-6">
+
+    <!-- Role Scope Banner -->
+    <div class="px-3 py-2.5 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0]">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Current Scope</div>
+      <div class="text-xs font-bold text-[#1B4D3E] truncate">
+        {% if user.role == 'CENTRAL_ADMIN' %}
+          Central University Operations
+        {% elif user.role == 'FACULTY_ADMIN' %}
+          {{ user.faculty|default:"Faculty of Computing" }}
+        {% elif user.role == 'LECTURER' %}
+          Faculty Teaching Staff
+        {% elif user.role == 'STUDENT' %}
+          {{ user.department|default:"Undergraduate Student" }}
+        {% else %}
+          Authorized User
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Navigation Groups Strictly Gated by Server-Side Role -->
+    <nav class="space-y-1">
+
+      <!-- =============================================================== -->
+      <!-- CENTRAL ADMIN NAVIGATION                                         -->
+      <!-- =============================================================== -->
+      {% if user.role == 'CENTRAL_ADMIN' or user_role == 'CENTRAL_ADMIN' %}
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#5C4033]">
+          Central Administration
+        </div>
+
+        <a href="/central/dashboard/"
+           {% if request.path == '/central/dashboard/' or request.path == '/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/central/dashboard/' or request.path == '/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+          <span>University Dashboard</span>
+        </a>
+
+        <a href="/central/optimization/"
+           {% if request.path == '/central/optimization/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/central/optimization/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          <span>Optimization Tuner</span>
+        </a>
+
+        <a href="/central/comms/"
+           {% if request.path == '/central/comms/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/central/comms/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+          </svg>
+          <span>Inter-Admin Comms</span>
+        </a>
+
+        <a href="/central/audit/"
+           {% if request.path == '/central/audit/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/central/audit/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span>Institutional Audit</span>
+        </a>
+
+      <!-- =============================================================== -->
+      <!-- FACULTY ADMIN NAVIGATION                                        -->
+      <!-- =============================================================== -->
+      {% elif user.role == 'FACULTY_ADMIN' or user_role == 'FACULTY_ADMIN' %}
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#5C4033]">
+          Faculty Administration
+        </div>
+
+        <a href="/faculty/dashboard/"
+           {% if request.path == '/faculty/dashboard/' or request.path == '/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/faculty/dashboard/' or request.path == '/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span>Faculty Dashboard</span>
+        </a>
+
+        <a href="/faculty/resources/"
+           {% if request.path == '/faculty/resources/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/faculty/resources/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          <span>Resources & Venues</span>
+        </a>
+
+        <a href="/faculty/generate/"
+           {% if request.path == '/faculty/generate/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/faculty/generate/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <span>Generate Timetable</span>
+        </a>
+
+        <a href="/faculty/matrix/"
+           {% if request.path == '/faculty/matrix/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/faculty/matrix/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+          </svg>
+          <span>Schedule Matrix & Overrides</span>
+        </a>
+
+        <a href="/faculty/inbox/"
+           {% if request.path == '/faculty/inbox/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/faculty/inbox/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+          </svg>
+          <div class="flex-1 flex items-center justify-between">
+            <span>Request Inbox</span>
+            <span class="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-slate-900 rounded-full">3</span>
+          </div>
+        </a>
+
+      <!-- =============================================================== -->
+      <!-- LECTURER NAVIGATION                                             -->
+      <!-- =============================================================== -->
+      {% elif user.role == 'LECTURER' or user_role == 'LECTURER' %}
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#5C4033]">
+          Teaching Portal
+        </div>
+
+        <a href="/lecturer/schedule/"
+           {% if request.path == '/lecturer/schedule/' or request.path == '/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/lecturer/schedule/' or request.path == '/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span>My Teaching Schedule</span>
+        </a>
+
+        <a href="/lecturer/availability/"
+           {% if request.path == '/lecturer/availability/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/lecturer/availability/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Availability Preferences</span>
+        </a>
+
+        <a href="/lecturer/request-change/"
+           {% if request.path == '/lecturer/request-change/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/lecturer/request-change/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span>Request Adjustment</span>
+        </a>
+
+        <a href="/lecturer/tickets/"
+           {% if request.path == '/lecturer/tickets/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/lecturer/tickets/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          <span>My Submitted Tickets</span>
+        </a>
+
+      <!-- =============================================================== -->
+      <!-- STUDENT NAVIGATION                                              -->
+      <!-- =============================================================== -->
+      {% elif user.role == 'STUDENT' or user_role == 'STUDENT' %}
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#5C4033]">
+          Student Portal
+        </div>
+
+        <a href="/student/timetable/"
+           {% if request.path == '/student/timetable/' or request.path == '/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/student/timetable/' or request.path == '/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          <span>Student Timetable</span>
+        </a>
+
+        <a href="/student/export/"
+           {% if request.path == '/student/export/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/student/export/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          <span>Printable Export (A4)</span>
+        </a>
+
+        <a href="/student/report-clash/"
+           {% if request.path == '/student/report-clash/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/student/report-clash/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <span>Report Clash / Incident</span>
+        </a>
+      {% endif %}
+
+    </nav>
+  </div>
+
+  <!-- Sidebar Footer: University Portal Badge -->
+  <div class="p-4 border-t border-[#E2E8F0] bg-[#F8F9FA] text-[11px] text-slate-500 space-y-1">
+    <div class="flex items-center space-x-1.5 font-bold text-[#1B4D3E]">
+      <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      </svg>
+      <span>FUD ATMS Core v2.4</span>
+    </div>
+    <div class="text-slate-400">
+      ICT Directorate &bull; Jigawa State
+    </div>
+  </div>
+</aside>

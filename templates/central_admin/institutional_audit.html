@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Institutional Audit Trail | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Security & Compliance
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Immutable Audit Trail</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Institutional Audit Log
+    </h1>
+    <p class="text-xs text-slate-500">
+      Forensic records of timetable manual overrides, algorithm executions, publishing events, and administrative security actions.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <button type="button"
+            onclick="window.print()"
+            class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-sm transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+      <span>Export Audit Log</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Audit Filter Toolbar -->
+<div class="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+  <div class="flex flex-wrap items-center gap-3">
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Category</label>
+      <select class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-[#1B4D3E]">
+        <option value="ALL">All Categories</option>
+        <option value="OVERRIDE">Manual Overrides</option>
+        <option value="GENERATE">Timetable Generation</option>
+        <option value="PUBLISH">Publishing Events</option>
+        <option value="AUTH">Authentication / Access</option>
+        <option value="RESOURCE">Resource Mutation</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Severity</label>
+      <select class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:ring-1 focus:ring-[#1B4D3E]">
+        <option value="ALL">All Severities</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Date Scope</label>
+      <input type="date" value="2025-10-14" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-700">
+    </div>
+  </div>
+
+  <div class="flex items-center space-x-2">
+    <span class="text-slate-400 text-xs font-mono">Total Records: 1,482</span>
+  </div>
+</div>
+
+<!-- Audit Log Table -->
+<div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse text-xs">
+      <thead>
+        <tr class="bg-[#F8F9FA] text-slate-600 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+          <th class="p-3.5 pl-5">Timestamp</th>
+          <th class="p-3.5">Actor (ID & Name)</th>
+          <th class="p-3.5">Action Category</th>
+          <th class="p-3.5">Event Summary</th>
+          <th class="p-3.5">Target Resource</th>
+          <th class="p-3.5 text-center">Severity</th>
+          <th class="p-3.5">IP Address</th>
+          <th class="p-3.5 pr-5 text-right">Details</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-slate-700 font-sans">
+        {% if page_obj and page_obj.object_list %}
+          {% for log in page_obj %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 pl-5 font-mono text-slate-500 whitespace-nowrap">
+              {{ log.timestamp|date:"Y-m-d H:i:s" }}
+            </td>
+            <td class="p-3.5">
+              <div class="font-bold text-slate-900">{{ log.user.get_full_name|default:log.user.institutional_id|default:"System Engine" }}</div>
+              <div class="text-[10px] font-mono text-slate-400">{{ log.user.institutional_id|default:"SYSTEM" }}</div>
+            </td>
+            <td class="p-3.5">
+              {% include 'components/audit_badge.html' with badge_type='action' value=log.action %}
+            </td>
+            <td class="p-3.5 max-w-xs font-medium text-slate-800">
+              {{ log.action }} on {{ log.entity_type }} ({{ log.entity_id }})
+            </td>
+            <td class="p-3.5 font-mono text-[11px] text-slate-600">
+              {{ log.entity_type }}-{{ log.entity_id }}
+            </td>
+            <td class="p-3.5 text-center">
+              {% include 'components/audit_badge.html' with badge_type='severity' value='LOW' %}
+            </td>
+            <td class="p-3.5 font-mono text-slate-500">{{ log.ip_address|default:"127.0.0.1" }}</td>
+            <td class="p-3.5 pr-5 text-right">
+              <button type="button" onclick="openAuditDetail('AUD-{{ log.id }}')"
+                      class="text-[#1B4D3E] hover:underline font-bold text-xs">Inspect</button>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+        <!-- Baseline Record 1: Manual Override -->
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 pl-5 font-mono text-slate-500 whitespace-nowrap">
+            2025-10-14 11:32:04
+          </td>
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">Dr. Aminu Sani Dutse</div>
+            <div class="text-[10px] font-mono text-slate-400">FUD/SCI/2024/014</div>
+          </td>
+          <td class="p-3.5">
+            {% include 'components/audit_badge.html' with badge_type='action' value='OVERRIDE' %}
+          </td>
+          <td class="p-3.5 max-w-xs font-medium text-slate-800">
+            Manual slot override: Moved CSC 301 from Hall 2 to Abubakar Gimba Theatre.
+          </td>
+          <td class="p-3.5 font-mono text-[11px] text-slate-600">
+            SLOT-CSC301-TUE-0800
+          </td>
+          <td class="p-3.5 text-center">
+            {% include 'components/audit_badge.html' with badge_type='severity' value='MEDIUM' %}
+          </td>
+          <td class="p-3.5 font-mono text-slate-500">10.20.4.52</td>
+          <td class="p-3.5 pr-5 text-right">
+            <button type="button" onclick="openAuditDetail('AUD-9481')"
+                    class="text-[#1B4D3E] hover:underline font-bold text-xs">Inspect</button>
+          </td>
+        </tr>
+
+        <!-- Record 2: Central Publish -->
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 pl-5 font-mono text-slate-500 whitespace-nowrap">
+            2025-10-14 09:15:22
+          </td>
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">Engr. Dr. A. S. Dutse</div>
+            <div class="text-[10px] font-mono text-slate-400">FUD/ADM/2024/001</div>
+          </td>
+          <td class="p-3.5">
+            {% include 'components/audit_badge.html' with badge_type='action' value='APPROVE' %}
+          </td>
+          <td class="p-3.5 max-w-xs font-medium text-slate-800">
+            Faculty of Agriculture 2025/2026 timetable approved for Central publication.
+          </td>
+          <td class="p-3.5 font-mono text-[11px] text-slate-600">
+            FAC-AGR-2025-HARM
+          </td>
+          <td class="p-3.5 text-center">
+            {% include 'components/audit_badge.html' with badge_type='severity' value='LOW' %}
+          </td>
+          <td class="p-3.5 font-mono text-slate-500">10.20.1.10</td>
+          <td class="p-3.5 pr-5 text-right">
+            <button type="button" onclick="openAuditDetail('AUD-9480')"
+                    class="text-[#1B4D3E] hover:underline font-bold text-xs">Inspect</button>
+          </td>
+        </tr>
+
+        <!-- Record 3: Genetic Generation Run -->
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 pl-5 font-mono text-slate-500 whitespace-nowrap">
+            2025-10-13 16:48:10
+          </td>
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">Prof. M. B. Ibrahim</div>
+            <div class="text-[10px] font-mono text-slate-400">FUD/SCI/2024/002</div>
+          </td>
+          <td class="p-3.5">
+            {% include 'components/audit_badge.html' with badge_type='action' value='GENERATE' %}
+          </td>
+          <td class="p-3.5 max-w-xs font-medium text-slate-800">
+            Automated Generation: Genetic algorithm completed (Epoch 450, 0 hard clashes, fitness 96.4%).
+          </td>
+          <td class="p-3.5 font-mono text-[11px] text-slate-600">
+            GEN-RUN-SCI-450
+          </td>
+          <td class="p-3.5 text-center">
+            {% include 'components/audit_badge.html' with badge_type='severity' value='INFO' %}
+          </td>
+          <td class="p-3.5 font-mono text-slate-500">10.20.4.18</td>
+          <td class="p-3.5 pr-5 text-right">
+            <button type="button" onclick="openAuditDetail('AUD-9479')"
+                    class="text-[#1B4D3E] hover:underline font-bold text-xs">Inspect</button>
+          </td>
+        </tr>
+
+        <!-- Record 4: Clash Reported by Student -->
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 pl-5 font-mono text-slate-500 whitespace-nowrap">
+            2025-10-13 14:02:45
+          </td>
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">Fatima Bello</div>
+            <div class="text-[10px] font-mono text-slate-400">FUD/CST/21/0456</div>
+          </td>
+          <td class="p-3.5">
+            {% include 'components/audit_badge.html' with badge_type='action' value='CLASH_FLAG' %}
+          </td>
+          <td class="p-3.5 max-w-xs font-medium text-slate-800">
+            Incident Flagged: LT-A locked during scheduled MTH 201 lecture hour.
+          </td>
+          <td class="p-3.5 font-mono text-[11px] text-slate-600">
+            INCIDENT-FLAG-092
+          </td>
+          <td class="p-3.5 text-center">
+            {% include 'components/audit_badge.html' with badge_type='severity' value='HIGH' %}
+          </td>
+          <td class="p-3.5 font-mono text-slate-500">192.168.10.84</td>
+          <td class="p-3.5 pr-5 text-right">
+            <button type="button" onclick="openAuditDetail('AUD-9478')"
+                    class="text-[#1B4D3E] hover:underline font-bold text-xs">Inspect</button>
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Audit Detail Inspector Dialog -->
+<dialog id="auditModal" class="rounded-xl shadow-2xl p-0 border border-[#E2E8F0] max-w-lg w-full text-slate-900">
+  <div class="bg-white rounded-xl overflow-hidden">
+    <div class="p-4 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-900">Audit Record Inspector</h3>
+      <button type="button" onclick="closeModal('auditModal')" class="text-slate-400 hover:text-slate-700 text-sm font-bold">&times;</button>
+    </div>
+    <div class="p-5 space-y-3 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Record Reference</span>
+        <span id="auditRecordId" class="font-mono font-bold text-slate-800">AUD-9481</span>
+      </div>
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Cryptographic State Signature</span>
+        <span class="font-mono text-[11px] text-[#1B4D3E] break-all bg-emerald-50 p-2 rounded block">
+          sha256:d8f43a9e217c093bfa8619bc9e47264a7812908f2e96c4d7159a180371ab48f2
+        </span>
+      </div>
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Pre-Commit State Diff</span>
+        <pre class="bg-slate-900 text-emerald-400 p-3 rounded text-[11px] font-mono overflow-x-auto">
+{
+  "slot": "TUE_0800_1000",
+  "course": "CSC301",
+  "previous_venue": "HALL_2",
+  "assigned_venue": "ABUBAKAR_GIMBA_LT",
+  "authorized_by": "FUD/SCI/2024/014",
+  "conflict_precheck_status": "CLEARED"
+}</pre>
+      </div>
+    </div>
+    <div class="p-3 bg-[#F8F9FA] border-t border-[#E2E8F0] flex justify-end">
+      <button type="button" onclick="closeModal('auditModal')"
+              class="px-4 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg">
+        Close Inspector
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  function openAuditDetail(recordId) {
+    const el = document.getElementById('auditRecordId');
+    if (el) el.textContent = recordId;
+    openModal('auditModal');
+  }
+</script>
+{% endblock %}

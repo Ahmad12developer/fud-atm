@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#F8F9FA]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Automated Timetable Management System - Federal University Dutse (FUD), Jigawa State">
+  <meta name="institution" content="Federal University Dutse">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}ATMS | Federal University Dutse{% endblock %}</title>
+
+  <!-- Tailwind CSS CDN with FUD Brand Theme -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fud: {
+              green: '#1B4D3E',
+              'green-dark': '#13392E',
+              'green-light': '#246552',
+              brown: '#5C4033',
+              'brown-light': '#755343',
+              bg: '#F8F9FA',
+              surface: '#FFFFFF',
+              border: '#E2E8F0',
+            },
+            slate: {
+              900: '#0F172A',
+              500: '#64748B',
+            },
+            emerald: {
+              600: '#059669',
+            },
+            amber: {
+              600: '#D97706',
+            },
+            crimson: {
+              600: '#DC2626',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Institutional Fallback & Utility Styles -->
+  <link rel="stylesheet" href="{% static 'css/fud-theme.css' %}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full font-sans antialiased text-[#0F172A] bg-[#F8F9FA] flex flex-col selection:bg-[#1B4D3E] selection:text-white">
+
+  <!-- Accessible Skip Link (WCAG 2.1 AA) -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#1B4D3E] focus:text-white focus:font-bold focus:rounded-lg focus:shadow-xl focus:ring-2 focus:ring-amber-400">
+    Skip to main content
+  </a>
+
+  {% block root_layout %}
+  {% if request.user.is_authenticated %}
+    <!-- Top Navigation Bar -->
+    {% include 'components/topbar.html' %}
+  {% endif %}
+
+  <!-- Main Viewport Container -->
+  <div class="flex-1 flex overflow-hidden">
+    {% if request.user.is_authenticated %}
+      <!-- Server-Side Role-Gated Sidebar Navigation -->
+      {% include 'components/sidebar.html' %}
+    {% endif %}
+
+    <!-- Main Content Workspace -->
+    <main id="main-content" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8F9FA] focus:outline-none" tabindex="-1">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Django Flash Alert Messages -->
+        {% include 'components/messages.html' %}
+
+        <!-- Role Breadcrumb / Header Area -->
+        {% block page_header %}{% endblock %}
+
+        <!-- Dynamic View Content -->
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+  {% endblock %}
+
+  <!-- Reusable Confirmation Dialog -->
+  {% include 'components/modal_confirm.html' %}
+
+  <!-- Core Security & Interaction Primitives -->
+  <script>
+    /**
+     * Extracts CSRF token safely from DOM or cookies
+     */
+    function getCsrfToken() {
+      const metaTag = document.querySelector('meta[name="csrf-token"]');
+      if (metaTag && metaTag.content) {
+        return metaTag.content;
+      }
+      const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (tokenInput) {
+        return tokenInput.value;
+      }
+      const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+      return cookieMatch ? cookieMatch[1] : '';
+    }
+
+    /**
+     * Global AJAX Fetch Interceptor:
+     * Automatically injects 'X-CSRFToken' header on all relative and same-origin fetch requests
+     */
+    (function() {
+      const originalFetch = window.fetch;
+      window.fetch = function(resource, init) {
+        init = init || {};
+        const url = typeof resource === 'string' ? resource : (resource && resource.url) || '';
+        const isSameOrigin = !url.startsWith('http://') && !url.startsWith('https://') || url.startsWith(window.location.origin);
+        if (isSameOrigin) {
+          init.headers = init.headers || {};
+          const token = getCsrfToken();
+          if (token) {
+            if (init.headers instanceof Headers) {
+              if (!init.headers.has('X-CSRFToken')) {
+                init.headers.set('X-CSRFToken', token);
+              }
+            } else if (Array.isArray(init.headers)) {
+              if (!init.headers.some(([k]) => k.toLowerCase() === 'x-csrftoken')) {
+                init.headers.push(['X-CSRFToken', token]);
+              }
+            } else {
+              if (!init.headers['X-CSRFToken'] && !init.headers['x-csrftoken']) {
+                init.headers['X-CSRFToken'] = token;
+              }
+            }
+          }
+        }
+        return originalFetch.call(this, resource, init);
+      };
+      window.fudFetch = window.fetch;
+      window.getCsrfToken = getCsrfToken;
+    })();
+
+    /**
+     * Generic Modal Controller for Accessible HTML5 <dialog>
+     */
+    function openModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else if (dialog) {
+        dialog.classList.remove('hidden');
+      }
+    }
+
+    function closeModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.close === 'function') {
+        dialog.close();
+      } else if (dialog) {
+        dialog.classList.add('hidden');
+      }
+    }
+
+    // Dismiss message alerts
+    function dismissAlert(alertEl) {
+      if (alertEl) {
+        alertEl.style.opacity = '0';
+        setTimeout(() => alertEl.remove(), 200);
+      }
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

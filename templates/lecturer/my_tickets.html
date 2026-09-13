@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Submitted Tickets | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Tracking Center
+      </span>
+      <span class="text-xs text-slate-500 font-mono">{{ user.name }} &bull; Staff ID: {{ user.id }}</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Submitted Schedule Adjustment Tickets
+    </h1>
+    <p class="text-xs text-slate-500">
+      Track review status, committee decisions, and revised timetable bindings for your course units.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <a href="/lecturer/request-change/"
+       class="px-4 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span>Submit New Ticket</span>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+  <!-- Ticket 1: APPROVED -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-042</span>
+        {% include 'components/audit_badge.html' with badge_type='action' value='APPROVED' %}
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          Capacity Issue
+        </span>
+      </div>
+      <span class="text-[11px] text-slate-400 font-mono">Resolved: Oct 14, 2025 at 11:32</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Course Unit</span>
+        <span class="font-bold text-[#1B4D3E] text-sm block">CSC 307 (Algorithms & Complexity)</span>
+        <span class="text-slate-500 text-[11px]">Enrolled Cohort: 215 Students</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Previous Assignment</span>
+        <span class="font-mono text-slate-700 block">Tuesday 14:00 @ Hall 4</span>
+        <span class="text-slate-400 text-[11px]">Capacity 100 Seats (Deficit)</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Revised Approved Slot</span>
+        <span class="font-mono font-bold text-emerald-700 block">Tuesday 14:00 @ TWIN-A</span>
+        <span class="text-emerald-600 text-[11px]">Twin Theatre A (200 Seats - Cleared)</span>
+      </div>
+    </div>
+
+    <!-- Admin Resolution Note -->
+    <div class="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-slate-800 leading-relaxed">
+      <div class="flex items-center space-x-1.5 font-bold text-[#1B4D3E] mb-1">
+        <svg class="w-4 h-4 text-[#059669]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        <span>Committee Resolution Note:</span>
+      </div>
+      <p class="text-slate-700">
+        Reassignment approved by Dr. Aminu Sani Dutse (Faculty Timetable Officer). Real-time collision pre-check confirmed Twin Theatre A is vacant and can accommodate your cohort. Master timetable updated.
+      </p>
+    </div>
+  </div>
+
+  <!-- Ticket 2: PENDING -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-055</span>
+        {% include 'components/audit_badge.html' with badge_type='action' value='PENDING' %}
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+          Equipment / Lab
+        </span>
+      </div>
+      <span class="text-[11px] text-slate-400 font-mono">Submitted: Oct 13, 2025 at 09:40</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Course Unit</span>
+        <span class="font-bold text-[#1B4D3E] text-sm block">CSC 301 (Systems Analysis)</span>
+        <span class="text-slate-500 text-[11px]">Enrolled Cohort: 185 Students</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Requested Change</span>
+        <span class="font-mono text-slate-700 block">Move Tutorial to PTDF-LAB</span>
+        <span class="text-slate-400 text-[11px]">Thursday 10:00 - 12:00</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Status</span>
+        <span class="text-amber-800 font-bold block">Awaiting Committee Evaluation</span>
+        <span class="text-slate-400 text-[11px]">Queued for Friday Faculty Board</span>
+      </div>
+    </div>
+
+    <div class="p-3.5 rounded-lg bg-[#F8F9FA] border border-slate-200 text-xs text-slate-700 leading-relaxed">
+      <strong class="font-bold text-slate-900 block mb-0.5">Your Submission Justification:</strong>
+      UML software modeling practicals require students to have individual access to workstation software. Hall 4 lacks PC terminals.
+    </div>
+  </div>
+
+  <!-- Ticket 3: REJECTED -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4 opacity-80">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-018</span>
+        {% include 'components/audit_badge.html' with badge_type='action' value='REJECTED' %}
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
+          Personal Timing
+        </span>
+      </div>
+      <span class="text-[11px] text-slate-400 font-mono">Resolved: Oct 02, 2025</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Course Unit</span>
+        <span class="font-bold text-slate-700 text-sm block">CSC 301 (Systems Analysis)</span>
+      </div>
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Requested Slot</span>
+        <span class="font-mono text-slate-700 block">Friday 13:00 - 15:00</span>
+      </div>
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Decision</span>
+        <span class="font-bold text-[#DC2626] block">Denied by Senate Policy</span>
+      </div>
+    </div>
+
+    <div class="p-3.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-900 leading-relaxed">
+      <strong class="font-bold block mb-0.5">Rejection Rationale:</strong>
+      Requested slot falls within the protected Friday Juma'at Prayer window (12:30 PM – 2:00 PM), which is a hard institutional lockout across Federal University Dutse. No academic activities may be scheduled during this interval.
+    </div>
+  </div>
+
+</div>
+{% endblock %}

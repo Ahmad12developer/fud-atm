@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Official Timetable Printout | Federal University Dutse</title>
+  
+  <style>
+    /* Reset & Clean A4 Landscape Rules */
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #000000;
+      background: #ffffff;
+      margin: 0;
+      padding: 10px;
+      font-size: 11px;
+    }
+
+    .no-print {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1B4D3E;
+      color: #ffffff;
+      padding: 10px 20px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+    }
+
+    .no-print button {
+      background: #ffffff;
+      color: #1B4D3E;
+      font-weight: bold;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .no-print a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 12px;
+      margin-right: 15px;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        padding: 0;
+      }
+    }
+
+    /* Institutional Letterhead */
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #000000;
+      padding-bottom: 8px;
+    }
+
+    .univ-title {
+      text-align: center;
+    }
+
+    .univ-title h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .univ-title h2 {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #333333;
+      text-transform: uppercase;
+    }
+
+    .univ-title p {
+      margin: 3px 0 0 0;
+      font-size: 10px;
+      font-style: italic;
+      color: #555555;
+    }
+
+    .meta-box {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      padding: 4px 8px;
+      border: 1px solid #000000;
+      background-color: #f5f5f5;
+    }
+
+    /* Solid Black Printable Grid */
+    .timetable-grid {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000000;
+      margin-bottom: 15px;
+    }
+
+    .timetable-grid th, .timetable-grid td {
+      border: 1px solid #000000;
+      padding: 6px 4px;
+      text-align: center;
+      vertical-align: top;
+    }
+
+    .timetable-grid th {
+      background-color: #e5e5e5;
+      font-weight: bold;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .day-col {
+      font-weight: bold;
+      background-color: #f0f0f0;
+      width: 80px;
+      text-transform: uppercase;
+      vertical-align: middle !important;
+      font-size: 11px;
+    }
+
+    .cell-course {
+      font-weight: bold;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
+    .cell-title {
+      font-size: 9px;
+      margin-bottom: 3px;
+    }
+
+    .cell-meta {
+      font-size: 9px;
+      font-style: italic;
+    }
+
+    .prayer-slot {
+      background-color: #efefef;
+      font-weight: bold;
+      font-size: 10px;
+      vertical-align: middle !important;
+    }
+
+    /* Sign-Off Section */
+    .signoff-section {
+      width: 100%;
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .sign-box {
+      width: 30%;
+      border-top: 1px solid #000000;
+      padding-top: 5px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .sign-box .role {
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls (Hidden during physical print) -->
+  <div class="no-print">
+    <div>
+      <strong>Federal University Dutse &bull; Clean A4 Landscape Print View</strong>
+      <span style="opacity: 0.8; font-size: 11px; margin-left: 10px;">Formatted to fit single A4 page with high contrast solid black borders</span>
+    </div>
+    <div>
+      <a href="/student/timetable/">&larr; Return to Portal</a>
+      <button onclick="window.print()">Print Timetable (A4)</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <table class="header-table">
+    <tr>
+      <td class="univ-title">
+        <h1>FEDERAL UNIVERSITY DUTSE</h1>
+        <h2>DIRECTORATE OF ACADEMIC PLANNING (DAP) &bull; TIMETABLE COMMITTEE</h2>
+        <p>P.M.B 7156, Dutse, Jigawa State, Nigeria &bull; "Knowledge, Excellence & Service"</p>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Meta Strip -->
+  <div class="meta-box">
+    <div>FACULTY: Faculty of Computing & Information Technology</div>
+    <div>DEPARTMENT: Computer Science (300 Level)</div>
+    <div>SESSION: 2025/2026 Academic Session</div>
+    <div>SEMESTER: Harmattan (1st) Semester</div>
+  </div>
+
+  <!-- Print Grid -->
+  <table class="timetable-grid">
+    <thead>
+      <tr>
+        <th style="width: 80px;">DAY</th>
+        <th style="width: 18%;">08:00 AM - 10:00 AM</th>
+        <th style="width: 18%;">10:00 AM - 12:00 PM</th>
+        <th style="width: 16%;">12:00 PM - 02:00 PM</th>
+        <th style="width: 18%;">02:00 PM - 04:00 PM</th>
+        <th style="width: 18%;">04:00 PM - 06:00 PM</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- Monday -->
+      <tr>
+        <td class="day-col">MONDAY</td>
+        <td>
+          <div class="cell-course">CSC 301 (3 CU)</div>
+          <div class="cell-title">Structured Systems Analysis</div>
+          <div class="cell-meta">Abubakar Gimba LT &bull; Dr. Aminu</div>
+        </td>
+        <td>
+          <div class="cell-course">CSC 305 (3 CU)</div>
+          <div class="cell-title">Database Systems</div>
+          <div class="cell-meta">Twin Theatre A &bull; Mal. Haruna</div>
+        </td>
+        <td style="vertical-align: middle; color: #555;">BREAK</td>
+        <td>
+          <div class="cell-course">CSC 311 (2 CU - LAB)</div>
+          <div class="cell-title">Operating Systems Lab</div>
+          <div class="cell-meta">PTDF Lab &bull; Dr. Garba</div>
+        </td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+      </tr>
+
+      <!-- Tuesday -->
+      <tr>
+        <td class="day-col">TUESDAY</td>
+        <td>
+          <div class="cell-course">SE 301 (3 CU)</div>
+          <div class="cell-title">Software Architecture</div>
+          <div class="cell-meta">Twin Theatre B &bull; Dr. Fatima</div>
+        </td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+        <td style="vertical-align: middle; color: #555;">BREAK</td>
+        <td>
+          <div class="cell-course">CSC 307 (3 CU)</div>
+          <div class="cell-title">Algorithms & Complexity</div>
+          <div class="cell-meta">Twin Theatre A &bull; Dr. Aminu</div>
+        </td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+      </tr>
+
+      <!-- Wednesday -->
+      <tr>
+        <td class="day-col">WEDNESDAY</td>
+        <td colspan="5" style="vertical-align: middle; color: #444; font-style: italic; padding: 15px;">
+          DESIGNATED RESEARCH, PRACTICAL PROJECTS & GENERAL STUDIES (GST) SESSION
+        </td>
+      </tr>
+
+      <!-- Thursday -->
+      <tr>
+        <td class="day-col">THURSDAY</td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+        <td>
+          <div class="cell-course">CSC 301 (Tutorial Group A)</div>
+          <div class="cell-title">Systems Analysis Clinic</div>
+          <div class="cell-meta">Hall 4 &bull; Dr. Aminu</div>
+        </td>
+        <td style="vertical-align: middle; color: #555;">BREAK</td>
+        <td>
+          <div class="cell-course">CYB 301 (3 CU)</div>
+          <div class="cell-title">Network Security</div>
+          <div class="cell-meta">Abubakar Gimba LT &bull; Mal. Haruna</div>
+        </td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+      </tr>
+
+      <!-- Friday -->
+      <tr>
+        <td class="day-col">FRIDAY</td>
+        <td>
+          <div class="cell-course">CSC 309 (3 CU)</div>
+          <div class="cell-title">Artificial Intelligence</div>
+          <div class="cell-meta">Twin Theatre B &bull; Prof. B. Dutse</div>
+        </td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+        <td class="prayer-slot">
+          JUMA'AT PRAYER BREAK<br>
+          (12:30 PM - 02:00 PM)
+        </td>
+        <td>
+          <div class="cell-course">SE 305 (2 CU - LAB)</div>
+          <div class="cell-title">Software Testing Lab</div>
+          <div class="cell-meta">PTDF Lab &bull; Dr. Garba</div>
+        </td>
+        <td style="vertical-align: middle; color: #777;">FREE</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- Official Signatures -->
+  <div class="signoff-section">
+    <div class="sign-box">
+      <div class="role">Dr. Aminu Sani Dutse</div>
+      <div>Chairman, Faculty Timetable Committee</div>
+    </div>
+    <div class="sign-box">
+      <div class="role">Prof. Muhammad B. Ibrahim</div>
+      <div>Dean, Faculty of Computing & IT</div>
+    </div>
+    <div class="sign-box">
+      <div class="role">Registrar / Director DAP</div>
+      <div>Federal University Dutse</div>
+    </div>
+  </div>
+
+</body>
+</html>

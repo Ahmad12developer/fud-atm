@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Faculty Operations Dashboard | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Faculty Administration
+      </span>
+      <span class="text-xs text-slate-500 font-mono">{{ user.faculty|default:"Faculty of Computing & Information Technology" }}</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Faculty Resource & Scheduling Control
+    </h1>
+    <p class="text-xs text-slate-500">
+      Manage departmental course allocations, lecture halls, staff availability, and automated schedule generation.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <a href="/faculty/matrix/"
+       class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-sm transition">
+      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+      View Schedule Matrix
+    </a>
+    <a href="/faculty/generate/"
+       class="inline-flex items-center px-4 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition">
+      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Launch Generator
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Timetable Status Banner -->
+<div class="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div class="flex items-center space-x-3">
+    <div class="w-10 h-10 rounded-xl bg-amber-100 text-[#D97706] flex items-center justify-center font-bold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs font-bold text-slate-900 uppercase tracking-wide">Harmattan 2025/2026 Timetable Status:</span>
+        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-amber-100 text-[#D97706] border border-amber-300">
+          Generated &bull; Under Internal Faculty Review
+        </span>
+      </div>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Generated on Oct 13, 2025 &bull; 0 Hard Conflicts &bull; 97.8% Soft-Constraint Fitness Score
+      </p>
+    </div>
+  </div>
+
+  <div class="flex items-center space-x-2">
+    <a href="/faculty/matrix/"
+       class="px-3 py-1.5 text-xs font-bold text-[#1B4D3E] hover:bg-emerald-50 rounded-md border border-emerald-300 transition">
+      Inspect Matrix & Overrides
+    </a>
+  </div>
+</div>
+
+<!-- Faculty Scoped Resource Health Metrics -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
+    <div>
+      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Allocated Venues</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">18 Halls / Labs</div>
+      <div class="text-[11px] text-emerald-600 font-medium mt-1">
+        87% weekly utilization rate
+      </div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-[#1B4D3E] flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    </div>
+  </div>
+
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
+    <div>
+      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Departmental Courses</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">114 Courses</div>
+      <div class="text-[11px] text-slate-500 font-medium mt-1">
+        100L through 400L
+      </div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+    </div>
+  </div>
+
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
+    <div>
+      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Teaching Staff</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">42 Lecturers</div>
+      <div class="text-[11px] text-emerald-600 font-medium mt-1">
+        100% profiles submitted
+      </div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    </div>
+  </div>
+
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
+    <div>
+      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Tickets</div>
+      <div class="text-2xl font-black text-[#D97706] mt-1">3 Tickets</div>
+      <div class="text-[11px] text-[#5C4033] font-medium mt-1">
+        <a href="/faculty/inbox/" class="underline font-bold">Review in Request Inbox</a>
+      </div>
+    </div>
+    <div class="w-12 h-12 rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+    </div>
+  </div>
+
+</div>
+
+<!-- Quick Jump Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+  <!-- Card 1: Resources -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-3">
+    <div class="w-9 h-9 rounded-lg bg-[#1B4D3E]/10 text-[#1B4D3E] flex items-center justify-center font-bold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+    </div>
+    <h3 class="text-sm font-bold text-slate-900">Resource Database</h3>
+    <p class="text-xs text-slate-500 leading-relaxed">
+      Maintain lecture hall capacities, departmental lab facilities, projector setups, and lecturer teaching credit bounds.
+    </p>
+    <a href="/faculty/resources/" class="inline-block text-xs font-bold text-[#1B4D3E] hover:underline pt-2">
+      Manage Venues, Courses & Staff &rarr;
+    </a>
+  </div>
+
+  <!-- Card 2: Stepper Wizard -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-3">
+    <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </div>
+    <h3 class="text-sm font-bold text-slate-900">Automated Stepper Wizard</h3>
+    <p class="text-xs text-slate-500 leading-relaxed">
+      Execute the 6-stage automated scheduler with soft and hard constraint validation, scoring 0 clashes.
+    </p>
+    <a href="/faculty/generate/" class="inline-block text-xs font-bold text-[#1B4D3E] hover:underline pt-2">
+      Launch Multi-Step Generator &rarr;
+    </a>
+  </div>
+
+  <!-- Card 3: Interactive Grid & Overrides -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-3">
+    <div class="w-9 h-9 rounded-lg bg-[#5C4033]/10 text-[#5C4033] flex items-center justify-center font-bold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+    </div>
+    <h3 class="text-sm font-bold text-slate-900">Timetable Matrix & Overrides</h3>
+    <p class="text-xs text-slate-500 leading-relaxed">
+      View horizontal 8AM–6PM grid across Monday through Friday with real-time pre-commit conflict checking.
+    </p>
+    <a href="/faculty/matrix/" class="inline-block text-xs font-bold text-[#1B4D3E] hover:underline pt-2">
+      Open Timetable Matrix &rarr;
+    </a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Global Optimization Tuner | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Central Policy Engine
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Algorithm: Hybrid Genetic + ILP</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Global Soft-Constraint Priority Tuner
+    </h1>
+    <p class="text-xs text-slate-500">
+      Calibrate institutional weights to balance student comfort, lecturer satisfaction, and venue utilization efficiency.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <button type="button"
+            onclick="showConfirmModal({
+              title: 'Reset Optimization Weights',
+              message: 'Are you sure you want to revert all soft-constraint weights to Federal University Dutse Senate baseline parameters?',
+              actionUrl: '/central/optimization/reset/',
+              buttonText: 'Reset to Senate Baseline',
+              buttonClass: 'px-4 py-2 text-xs font-semibold text-white bg-slate-700 hover:bg-slate-800 rounded-lg shadow'
+            })"
+            class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-sm transition">
+      Revert to Baseline
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="/central/optimization/" class="space-y-6">
+  {% csrf_token %}
+
+  <!-- Top Info Notice -->
+  <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-slate-700 flex items-start space-x-3">
+    <svg class="w-5 h-5 text-[#1B4D3E] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+    </svg>
+    <div class="leading-relaxed">
+      <strong class="font-bold text-[#1B4D3E]">Senate Scheduling Guidelines (Harmattan 2025/2026):</strong>
+      Hard constraints (zero venue double-booking, lecturer non-overlapping, and student cohort clashes) are mathematical absolutes with infinite penalty. The sliders below govern secondary fitness optimization priorities.
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Left 2 Cols: The Priority Weight Sliders -->
+    <div class="lg:col-span-2 space-y-5">
+      
+      <!-- Slider 1: Student Idle Gaps -->
+      <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Minimize Student Idle Gaps</h3>
+            <p class="text-xs text-slate-500">Penalizes long inactive breaks between lectures on the same day for student cohorts.</p>
+          </div>
+          <span id="val_student_gap" class="px-2.5 py-1 rounded bg-emerald-50 text-[#1B4D3E] font-mono font-bold text-xs">85%</span>
+        </div>
+        <input type="range" name="weight_student_gap" min="10" max="100" value="85"
+               oninput="document.getElementById('val_student_gap').textContent = this.value + '%'"
+               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1B4D3E]">
+        <div class="flex justify-between text-[10px] text-slate-400 font-semibold mt-1">
+          <span>Tolerant of Gaps (Low)</span>
+          <span>Balanced</span>
+          <span>Compact Timetable (High)</span>
+        </div>
+      </div>
+
+      <!-- Slider 2: Lecturer Preferences Met -->
+      <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Honor Lecturer Preferred Time Slots</h3>
+            <p class="text-xs text-slate-500">Allocates lecture slots matching academic staff submitted weekly availability matrices.</p>
+          </div>
+          <span id="val_lecturer_pref" class="px-2.5 py-1 rounded bg-emerald-50 text-[#1B4D3E] font-mono font-bold text-xs">90%</span>
+        </div>
+        <input type="range" name="weight_lecturer_pref" min="10" max="100" value="90"
+               oninput="document.getElementById('val_lecturer_pref').textContent = this.value + '%'"
+               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1B4D3E]">
+        <div class="flex justify-between text-[10px] text-slate-400 font-semibold mt-1">
+          <span>Flexible (Low)</span>
+          <span>Standard</span>
+          <span>Strict Preference Matching (High)</span>
+        </div>
+      </div>
+
+      <!-- Slider 3: Inter-Campus Building Travel -->
+      <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Minimize Inter-Campus Building Travel</h3>
+            <p class="text-xs text-slate-500">Prevents assigning back-to-back classes in distant halls (e.g. Twin Theatres to Faculty Wing).</p>
+          </div>
+          <span id="val_travel_dist" class="px-2.5 py-1 rounded bg-emerald-50 text-[#1B4D3E] font-mono font-bold text-xs">75%</span>
+        </div>
+        <input type="range" name="weight_travel_dist" min="10" max="100" value="75"
+               oninput="document.getElementById('val_travel_dist').textContent = this.value + '%'"
+               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1B4D3E]">
+        <div class="flex justify-between text-[10px] text-slate-400 font-semibold mt-1">
+          <span>Disregard Location</span>
+          <span>Clustered by Faculty Zone</span>
+          <span>Strict Spatial Co-location</span>
+        </div>
+      </div>
+
+      <!-- Slider 4: Balanced Daily Course Load -->
+      <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Balanced Daily Course Load</h3>
+            <p class="text-xs text-slate-500">Spreads weekly credit load smoothly across Monday through Friday (max 6 credit hours/day).</p>
+          </div>
+          <span id="val_load_dist" class="px-2.5 py-1 rounded bg-emerald-50 text-[#1B4D3E] font-mono font-bold text-xs">80%</span>
+        </div>
+        <input type="range" name="weight_load_dist" min="10" max="100" value="80"
+               oninput="document.getElementById('val_load_dist').textContent = this.value + '%'"
+               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1B4D3E]">
+        <div class="flex justify-between text-[10px] text-slate-400 font-semibold mt-1">
+          <span>Bursty Load Allowed</span>
+          <span>Standard Distribution</span>
+          <span>Strict Equal Distribution</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Col: Institutional Exclusions & Commit -->
+    <div class="space-y-5">
+      
+      <!-- Institutional Blackout Window: Friday Juma'at Prayer -->
+      <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+          <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+          <span>Religious & Cultural Blackouts</span>
+        </h3>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Federal University Dutse statutes mandate a protected university-wide quiet window for Friday Juma'at congregation prayers.
+        </p>
+
+        <div class="p-3 bg-[#F8F9FA] rounded-lg border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800">Friday 12:30 PM – 2:00 PM</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">Enforced</span>
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-slate-600">
+            <input type="radio" id="friday_hard" name="friday_lockout_type" value="HARD" checked class="accent-[#1B4D3E]">
+            <label for="friday_hard" class="font-medium">Hard Lockout (Zero Lectures Allowed)</label>
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-slate-600">
+            <input type="radio" id="friday_soft" name="friday_lockout_type" value="SOFT" class="accent-[#1B4D3E]">
+            <label for="friday_soft">Soft Constraint (High Penalty)</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commit Action Card -->
+      <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Save Policy Configuration</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Updating these weights adjusts the fitness function for all subsequent automated generation runs across the 7 faculties.
+        </p>
+        <button type="submit"
+                class="w-full py-2.5 px-4 rounded-lg bg-[#1B4D3E] hover:bg-[#13392E] text-white font-bold text-xs uppercase tracking-wider shadow-md transition">
+          Apply & Recalibrate Solvers
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</form>
+{% endblock %}

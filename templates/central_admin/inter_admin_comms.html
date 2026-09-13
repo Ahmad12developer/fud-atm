@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inter-Admin Communications | FUD ATMS{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#5C4033] text-white rounded">
+        Administrative Channel
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Central &bull; Faculty Timetable Officers</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Inter-Admin Coordination Desk
+    </h1>
+    <p class="text-xs text-slate-500">
+      Direct threaded communication between Central Administration and Faculty Timetable Coordinators.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <button type="button" onclick="document.getElementById('message_body').focus()"
+            class="px-3.5 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span>New Broadcast Directive</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden flex flex-col md:flex-row h-[700px]">
+
+  <!-- Left Column: Faculty Threads List -->
+  <div class="w-full md:w-80 border-r border-[#E2E8F0] bg-[#F8F9FA] flex flex-col">
+    <div class="p-3.5 border-b border-[#E2E8F0]">
+      <input type="text" placeholder="Filter faculty threads..."
+             class="w-full px-3 py-1.5 text-xs rounded-md border border-slate-300 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1B4D3E]">
+    </div>
+
+    <div class="flex-1 overflow-y-auto divide-y divide-slate-200">
+      <!-- Active Thread 1: Computing -->
+      <a href="?thread=computing" class="block p-4 bg-white border-l-4 border-[#1B4D3E] hover:bg-slate-50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-900">Faculty of Computing</span>
+          <span class="text-[10px] text-slate-400 font-mono">10:42 AM</span>
+        </div>
+        <div class="text-[11px] font-semibold text-[#1B4D3E] mt-0.5">Dr. Aminu Sani Dutse</div>
+        <p class="text-xs text-slate-600 truncate mt-1">Twin Theatre A handover for CSC 301 lab session confirmed.</p>
+        <div class="mt-2 flex items-center space-x-2">
+          <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-amber-100 text-amber-800 rounded">Venue Request</span>
+          <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-emerald-100 text-emerald-800 rounded">Ready</span>
+        </div>
+      </a>
+
+      <!-- Thread 2: Science -->
+      <a href="?thread=science" class="block p-4 hover:bg-slate-50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-900">Faculty of Science</span>
+          <span class="text-[10px] text-slate-400 font-mono">Yesterday</span>
+        </div>
+        <div class="text-[11px] font-medium text-slate-600 mt-0.5">Prof. M. B. Ibrahim</div>
+        <p class="text-xs text-slate-500 truncate mt-1">Chemistry 101 split groups require extra morning slot on Thursday.</p>
+        <div class="mt-2 flex items-center space-x-2">
+          <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-red-100 text-red-800 rounded">Urgent</span>
+        </div>
+      </a>
+
+      <!-- Thread 3: Agriculture -->
+      <a href="?thread=agriculture" class="block p-4 hover:bg-slate-50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-900">Faculty of Agriculture</span>
+          <span class="text-[10px] text-slate-400 font-mono">Sep 11</span>
+        </div>
+        <div class="text-[11px] font-medium text-slate-600 mt-0.5">Dr. Halima Umar</div>
+        <p class="text-xs text-slate-500 truncate mt-1">Timetable generated with 0 conflicts. Awaiting Central sign-off.</p>
+        <div class="mt-2 flex items-center space-x-2">
+          <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-emerald-100 text-emerald-800 rounded">Approved</span>
+        </div>
+      </a>
+
+      <!-- Thread 4: Arts & Social Sciences -->
+      <a href="?thread=arts" class="block p-4 hover:bg-slate-50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-900">Faculty of Arts</span>
+          <span class="text-[10px] text-slate-400 font-mono">Sep 09</span>
+        </div>
+        <div class="text-[11px] font-medium text-slate-600 mt-0.5">Mal. Kabiru Haruna</div>
+        <p class="text-xs text-slate-500 truncate mt-1">Large cohort GST 101 venue reassignment proposal.</p>
+      </a>
+    </div>
+  </div>
+
+  <!-- Right Pane: Active Thread Messages & Composer -->
+  <div class="flex-1 flex flex-col bg-white">
+    
+    <!-- Thread Header -->
+    <div class="p-4 border-b border-[#E2E8F0] flex items-center justify-between bg-white">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-[#1B4D3E] text-white flex items-center justify-center font-bold text-sm">
+          FC
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">Faculty of Computing & Information Technology</h2>
+          <p class="text-xs text-slate-500">Coordinator: Dr. Aminu Sani Dutse &bull; ID: FUD/SCI/2024/014</p>
+        </div>
+      </div>
+      <span class="px-2 py-1 text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 rounded">
+        Channel Active
+      </span>
+    </div>
+
+    <!-- Message History Stream -->
+    <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-[#F8F9FA]/50">
+      {% if messages_list %}
+        {% for msg in messages_list %}
+          {% if msg.sender.role == 'CENTRAL_ADMIN' %}
+          <div class="flex items-start justify-end space-x-3">
+            <div class="max-w-lg bg-emerald-50 p-3.5 rounded-xl border border-emerald-200 shadow-sm text-right">
+              <div class="flex items-center justify-between space-x-4 mb-1">
+                <span class="text-[10px] text-emerald-800 font-mono">{{ msg.created_at|date:"H:i A" }}</span>
+                <span class="text-xs font-bold text-[#1B4D3E]">{{ msg.sender.get_full_name }} (Central Admin)</span>
+              </div>
+              <p class="text-xs text-slate-800 leading-relaxed text-left">{{ msg.message }}</p>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-[#1B4D3E] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">CA</div>
+          </div>
+          {% else %}
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-full bg-[#5C4033] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">FA</div>
+            <div class="max-w-lg bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-sm">
+              <div class="flex items-center justify-between space-x-4 mb-1">
+                <span class="text-xs font-bold text-slate-900">{{ msg.sender.get_full_name }}</span>
+                <span class="text-[10px] text-slate-400 font-mono">{{ msg.created_at|date:"H:i A" }}</span>
+              </div>
+              <p class="text-xs text-slate-700 leading-relaxed">{{ msg.message }}</p>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+      <!-- Message 1 from Faculty Admin -->
+      <div class="flex items-start space-x-3">
+        <div class="w-8 h-8 rounded-full bg-[#5C4033] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+          AD
+        </div>
+        <div class="max-w-lg bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-sm">
+          <div class="flex items-center justify-between space-x-4 mb-1">
+            <span class="text-xs font-bold text-slate-900">Dr. Aminu Sani Dutse</span>
+            <span class="text-[10px] text-slate-400 font-mono">09:15 AM</span>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">
+            Dear Central Timetable Committee, we have rerun the genetic solver for the 300L & 400L Software Engineering courses. We would like to verify if Abubakar Gimba Lecture Theatre is exclusively locked for our CSC 301 Tuesday 8:00 AM slot.
+          </p>
+        </div>
+      </div>
+
+      <!-- Message 2 from Central Admin (You) -->
+      <div class="flex items-start justify-end space-x-3">
+        <div class="max-w-lg bg-emerald-50 p-3.5 rounded-xl border border-emerald-200 shadow-sm text-right">
+          <div class="flex items-center justify-between space-x-4 mb-1">
+            <span class="text-[10px] text-emerald-800 font-mono">10:12 AM</span>
+            <span class="text-xs font-bold text-[#1B4D3E]">Central Administration (You)</span>
+          </div>
+          <p class="text-xs text-slate-800 leading-relaxed text-left">
+            Confirmed, Dr. Aminu. The Central database shows Abubakar Gimba Theatre is completely free Tuesday mornings. The inter-faculty conflict check returned 0 clashes. You may proceed with the schedule commit.
+          </p>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-[#1B4D3E] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+          CA
+        </div>
+      </div>
+
+      <!-- Message 3 from Faculty Admin -->
+      <div class="flex items-start space-x-3">
+        <div class="w-8 h-8 rounded-full bg-[#5C4033] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+          AD
+        </div>
+        <div class="max-w-lg bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-sm">
+          <div class="flex items-center justify-between space-x-4 mb-1">
+            <span class="text-xs font-bold text-slate-900">Dr. Aminu Sani Dutse</span>
+            <span class="text-[10px] text-slate-400 font-mono">10:42 AM</span>
+          </div>
+          <p class="text-xs text-slate-700 leading-relaxed">
+            Excellent. We will submit the final faculty matrix through the automated stepper for formal publication authorization.
+          </p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Message Composer with Strict CSRF Protection -->
+    <div class="p-4 border-t border-[#E2E8F0] bg-white">
+      <form action="/central/comms/send/" method="POST" class="space-y-3">
+        {% csrf_token %}
+        <input type="hidden" name="faculty_id" value="computing">
+
+        <div class="flex items-center space-x-3 text-xs">
+          <span class="font-bold text-slate-600">Priority Level:</span>
+          <label class="flex items-center space-x-1 cursor-pointer">
+            <input type="radio" name="priority" value="ROUTINE" checked class="accent-[#1B4D3E]">
+            <span class="text-slate-700">Routine</span>
+          </label>
+          <label class="flex items-center space-x-1 cursor-pointer">
+            <input type="radio" name="priority" value="URGENT" class="accent-[#DC2626]">
+            <span class="text-red-700 font-semibold">Urgent</span>
+          </label>
+        </div>
+
+        <div class="flex items-end space-x-3">
+          <div class="flex-1">
+            <textarea id="message_body" name="message" rows="2" required
+                      placeholder="Type official coordination message or administrative directive..."
+                      class="w-full p-2.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B4D3E]"></textarea>
+          </div>
+          <button type="submit"
+                  class="px-4 py-2.5 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5 h-10">
+            <span>Send Message</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

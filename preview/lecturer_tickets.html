@@ -1,0 +1,568 @@
+
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#F8F9FA]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Automated Timetable Management System - Federal University Dutse (FUD), Jigawa State">
+  <meta name="institution" content="Federal University Dutse">
+  <meta name="csrf-token" content="7aLgMh6umroI6tCXIMIOPTlo2UjIGsv3j5tWwOn7dDFWxAPCdrklyfckpdcyq7n2">
+  <title>My Submitted Tickets | FUD ATMS</title>
+
+  <!-- Tailwind CSS CDN with FUD Brand Theme -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fud: {
+              green: '#1B4D3E',
+              'green-dark': '#13392E',
+              'green-light': '#246552',
+              brown: '#5C4033',
+              'brown-light': '#755343',
+              bg: '#F8F9FA',
+              surface: '#FFFFFF',
+              border: '#E2E8F0',
+            },
+            slate: {
+              900: '#0F172A',
+              500: '#64748B',
+            },
+            emerald: {
+              600: '#059669',
+            },
+            amber: {
+              600: '#D97706',
+            },
+            crimson: {
+              600: '#DC2626',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Institutional Fallback & Utility Styles -->
+  <link rel="stylesheet" href="/static/css/fud-theme.css">
+
+  
+</head>
+<body class="h-full font-sans antialiased text-[#0F172A] bg-[#F8F9FA] flex flex-col selection:bg-[#1B4D3E] selection:text-white">
+
+  
+  <!-- Top Navigation Bar -->
+  <!-- FUD Institutional Topbar Navigation -->
+<header class="bg-[#1B4D3E] text-white border-b-4 border-[#5C4033] shadow-md sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Left: Institutional Brand Identity -->
+      <div class="flex items-center space-x-3">
+        <!-- SVG Emblem of Federal University Dutse -->
+        <a href="/" class="flex items-center space-x-3 group focus:outline-none focus:ring-2 focus:ring-amber-400 rounded-lg p-1">
+          <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow border border-amber-300">
+            <svg class="w-8 h-8 text-[#1B4D3E]" viewBox="0 0 24 24" fill="currentColor">
+              <!-- Institutional Emblem Silhouette -->
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1B4D3E"/>
+              <path d="M4 9.5V15.5C4 18.5 7.5 21 12 21C16.5 21 20 18.5 20 15.5V9.5L12 14L4 9.5Z" fill="#5C4033" opacity="0.9"/>
+              <circle cx="12" cy="7" r="1.5" fill="#D97706"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold tracking-tight text-lg text-white group-hover:text-amber-200 transition-colors">
+                FEDERAL UNIVERSITY DUTSE
+              </span>
+              <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-amber-500 text-slate-900 rounded">
+                ATMS
+              </span>
+            </div>
+            <p class="text-xs text-emerald-100 font-medium tracking-wide">
+              Automated Timetable Management System &bull; <span class="italic text-amber-200">Knowledge, Excellence & Service</span>
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Center: Academic Session Pill -->
+      <div class="hidden md:flex items-center space-x-2 bg-[#13392E] px-3.5 py-1.5 rounded-full border border-emerald-700/50 shadow-inner">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-semibold text-emerald-100 uppercase tracking-wider">
+          2025/2026 Academic Session &bull; Harmattan (1st) Semester
+        </span>
+      </div>
+
+      <!-- Right: User Profile, Role Badge & Logout Form -->
+      <div class="flex items-center space-x-4">
+        
+        <!-- Role Switcher for Interactive Demo / Evaluation -->
+        <div class="relative group">
+          <button type="button" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium text-emerald-200 hover:text-white bg-[#13392E] hover:bg-[#246552] px-2.5 py-1.5 rounded border border-emerald-700 transition">
+            <span>Switch Role Scope</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-xl py-1 text-slate-900 hidden group-hover:block border border-slate-200 z-50">
+            <div class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+              Deterministic Role Scope
+            </div>
+            <a href="/role-switch/CENTRAL_ADMIN/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Central Admin (FUD/ADM/...)
+            </a>
+            <a href="/role-switch/FACULTY_ADMIN/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Faculty Admin (FUD/SCI/...)
+            </a>
+            <a href="/role-switch/LECTURER/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Lecturer (FUD/LEC/...)
+            </a>
+            <a href="/role-switch/STUDENT/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
+              Student (FUD/CST/...)
+            </a>
+          </div>
+        </div>
+
+        <!-- Identity & Role Indicator -->
+        <div class="flex items-center space-x-3 border-l border-emerald-700/60 pl-4">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs font-semibold text-white tracking-wide">
+              Engr. Dr. A. S. Dutse
+            </div>
+            <div class="flex items-center justify-end space-x-1 mt-0.5">
+              <span class="text-[11px] text-emerald-200 font-mono">
+                FUD/LEC/2025/001
+              </span>
+              <span class="px-1.5 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded text-[10px] font-bold uppercase">
+                Lecturer
+                
+              </span>
+            </div>
+          </div>
+
+          <!-- User Avatar Placeholder with FUD Color -->
+          <div class="w-9 h-9 rounded-full bg-[#5C4033] border-2 border-amber-400/60 flex items-center justify-center text-white font-bold text-sm shadow">
+            E
+          </div>
+
+          <!-- Strict CSRF-Protected Logout Button -->
+          <form action="/logout/" method="POST" class="inline">
+            <input type="hidden" name="csrfmiddlewaretoken" value="7aLgMh6umroI6tCXIMIOPTlo2UjIGsv3j5tWwOn7dDFWxAPCdrklyfckpdcyq7n2">
+            <button type="submit" title="Secure Logout" class="p-1.5 text-emerald-200 hover:text-white hover:bg-[#13392E] rounded-md transition focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <span class="sr-only">Sign out</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</header>
+
+
+  <!-- Main Viewport Container -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Server-Side Role-Gated Sidebar Navigation -->
+    <!-- Server-Side Role-Gated Sidebar Navigation -->
+<aside class="w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between flex-shrink-0 shadow-sm">
+  <div class="p-4 space-y-6">
+
+    <!-- Role Scope Banner -->
+    <div class="px-3 py-2.5 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0]">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Current Scope</div>
+      <div class="text-xs font-bold text-[#1B4D3E] truncate">
+        
+          Faculty Teaching Staff
+        
+      </div>
+    </div>
+
+    <!-- Navigation Groups Strictly Gated by Server-Side Role -->
+    <nav class="space-y-1">
+
+      <!-- =============================================================== -->
+      <!-- CENTRAL ADMIN NAVIGATION                                         -->
+      <!-- =============================================================== -->
+      
+        <div class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#5C4033]">
+          Teaching Portal
+        </div>
+
+        <a href="/lecturer/schedule/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span>My Teaching Schedule</span>
+        </a>
+
+        <a href="/lecturer/availability/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Availability Preferences</span>
+        </a>
+
+        <a href="/lecturer/request-change/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span>Request Adjustment</span>
+        </a>
+
+        <a href="/lecturer/tickets/"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors bg-[#1B4D3E] text-white shadow-sm">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          <span>My Submitted Tickets</span>
+        </a>
+
+      <!-- =============================================================== -->
+      <!-- STUDENT NAVIGATION                                              -->
+      <!-- =============================================================== -->
+      
+
+    </nav>
+  </div>
+
+  <!-- Sidebar Footer: University Portal Badge -->
+  <div class="p-4 border-t border-[#E2E8F0] bg-[#F8F9FA] text-[11px] text-slate-500 space-y-1">
+    <div class="flex items-center space-x-1.5 font-bold text-[#1B4D3E]">
+      <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      </svg>
+      <span>FUD ATMS Core v2.4</span>
+    </div>
+    <div class="text-slate-400">
+      ICT Directorate &bull; Jigawa State
+    </div>
+  </div>
+</aside>
+
+
+    <!-- Main Content Workspace -->
+    <main id="main-content" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8F9FA] focus:outline-none" tabindex="-1">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Django Flash Alert Messages -->
+        <!-- Django Flash Alert Messages Component -->
+
+
+
+        <!-- Role Breadcrumb / Header Area -->
+        
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#E2E8F0] gap-4">
+  <div>
+    <div class="flex items-center space-x-2">
+      <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
+        Tracking Center
+      </span>
+      <span class="text-xs text-slate-500 font-mono">Engr. Dr. A. S. Dutse &bull; Staff ID: FUD/LEC/2025/001</span>
+    </div>
+    <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
+      Submitted Schedule Adjustment Tickets
+    </h1>
+    <p class="text-xs text-slate-500">
+      Track review status, committee decisions, and revised timetable bindings for your course units.
+    </p>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <a href="/lecturer/request-change/"
+       class="px-4 py-2 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition flex items-center space-x-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span>Submit New Ticket</span>
+    </a>
+  </div>
+</div>
+
+
+        <!-- Dynamic View Content -->
+        
+<div class="space-y-4">
+
+  <!-- Ticket 1: APPROVED -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-042</span>
+        <!-- Reusable Audit Severity & Action Badges -->
+
+  
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-[#059669] border border-emerald-300">
+      Approved
+    </span>
+  
+
+
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          Capacity Issue
+        </span>
+      </div>
+      <span class="text-[11px] text-slate-400 font-mono">Resolved: Oct 14, 2025 at 11:32</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Course Unit</span>
+        <span class="font-bold text-[#1B4D3E] text-sm block">CSC 307 (Algorithms & Complexity)</span>
+        <span class="text-slate-500 text-[11px]">Enrolled Cohort: 215 Students</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Previous Assignment</span>
+        <span class="font-mono text-slate-700 block">Tuesday 14:00 @ Hall 4</span>
+        <span class="text-slate-400 text-[11px]">Capacity 100 Seats (Deficit)</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Revised Approved Slot</span>
+        <span class="font-mono font-bold text-emerald-700 block">Tuesday 14:00 @ TWIN-A</span>
+        <span class="text-emerald-600 text-[11px]">Twin Theatre A (200 Seats - Cleared)</span>
+      </div>
+    </div>
+
+    <!-- Admin Resolution Note -->
+    <div class="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-slate-800 leading-relaxed">
+      <div class="flex items-center space-x-1.5 font-bold text-[#1B4D3E] mb-1">
+        <svg class="w-4 h-4 text-[#059669]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        <span>Committee Resolution Note:</span>
+      </div>
+      <p class="text-slate-700">
+        Reassignment approved by Dr. Aminu Sani Dutse (Faculty Timetable Officer). Real-time collision pre-check confirmed Twin Theatre A is vacant and can accommodate your cohort. Master timetable updated.
+      </p>
+    </div>
+  </div>
+
+  <!-- Ticket 2: PENDING -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-055</span>
+        <!-- Reusable Audit Severity & Action Badges -->
+
+  
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-[#D97706] border border-amber-300">
+      Pending
+    </span>
+  
+
+
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+          Equipment / Lab
+        </span>
+      </div>
+      <span class="text-[11px] text-slate-400 font-mono">Submitted: Oct 13, 2025 at 09:40</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Course Unit</span>
+        <span class="font-bold text-[#1B4D3E] text-sm block">CSC 301 (Systems Analysis)</span>
+        <span class="text-slate-500 text-[11px]">Enrolled Cohort: 185 Students</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Requested Change</span>
+        <span class="font-mono text-slate-700 block">Move Tutorial to PTDF-LAB</span>
+        <span class="text-slate-400 text-[11px]">Thursday 10:00 - 12:00</span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Status</span>
+        <span class="text-amber-800 font-bold block">Awaiting Committee Evaluation</span>
+        <span class="text-slate-400 text-[11px]">Queued for Friday Faculty Board</span>
+      </div>
+    </div>
+
+    <div class="p-3.5 rounded-lg bg-[#F8F9FA] border border-slate-200 text-xs text-slate-700 leading-relaxed">
+      <strong class="font-bold text-slate-900 block mb-0.5">Your Submission Justification:</strong>
+      UML software modeling practicals require students to have individual access to workstation software. Hall 4 lacks PC terminals.
+    </div>
+  </div>
+
+  <!-- Ticket 3: REJECTED -->
+  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4 opacity-80">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-018</span>
+        <!-- Reusable Audit Severity & Action Badges -->
+
+  
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-[#DC2626] border border-red-300">
+      Rejected
+    </span>
+  
+
+
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
+          Personal Timing
+        </span>
+      </div>
+      <span class="text-[11px] text-slate-400 font-mono">Resolved: Oct 02, 2025</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Course Unit</span>
+        <span class="font-bold text-slate-700 text-sm block">CSC 301 (Systems Analysis)</span>
+      </div>
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Requested Slot</span>
+        <span class="font-mono text-slate-700 block">Friday 13:00 - 15:00</span>
+      </div>
+      <div>
+        <span class="text-slate-400 uppercase font-bold text-[10px] block">Decision</span>
+        <span class="font-bold text-[#DC2626] block">Denied by Senate Policy</span>
+      </div>
+    </div>
+
+    <div class="p-3.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-900 leading-relaxed">
+      <strong class="font-bold block mb-0.5">Rejection Rationale:</strong>
+      Requested slot falls within the protected Friday Juma'at Prayer window (12:30 PM – 2:00 PM), which is a hard institutional lockout across Federal University Dutse. No academic activities may be scheduled during this interval.
+    </div>
+  </div>
+
+</div>
+
+      </div>
+    </main>
+  </div>
+  
+
+  <!-- Reusable Confirmation Dialog -->
+  <!-- Reusable Confirmation Dialog for Destructive / Critical Actions -->
+<dialog id="confirmModal" class="rounded-xl shadow-2xl p-0 border border-[#E2E8F0] backdrop:bg-slate-900/60 max-w-md w-full text-slate-900">
+  <div class="bg-white rounded-xl overflow-hidden">
+    
+    <!-- Modal Header -->
+    <div class="p-5 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center space-x-3">
+      <div id="confirmModalIcon" class="w-10 h-10 rounded-full bg-crimson-100 text-[#DC2626] flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900">
+          Confirm Action
+        </h3>
+        <p class="text-xs text-slate-500">
+          Federal University Dutse Security Protocol
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <p id="confirmModalMessage" class="text-sm text-slate-700 leading-relaxed">
+        Are you sure you want to proceed with this operation? This action will be logged in the Institutional Audit trail.
+      </p>
+    </div>
+
+    <!-- Modal Actions with CSRF Protection -->
+    <form id="confirmModalForm" method="POST" action="">
+      <input type="hidden" name="csrfmiddlewaretoken" value="7aLgMh6umroI6tCXIMIOPTlo2UjIGsv3j5tWwOn7dDFWxAPCdrklyfckpdcyq7n2">
+      <input type="hidden" name="action_target_id" id="confirmModalTargetId" value="">
+      <div class="p-4 bg-[#F8F9FA] border-t border-[#E2E8F0] flex justify-end space-x-3">
+        <button type="button" onclick="closeModal('confirmModal')"
+                class="px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg shadow-sm transition">
+          Cancel
+        </button>
+        <button type="submit" id="confirmModalBtn"
+                class="px-4 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow transition focus:ring-2 focus:ring-red-400">
+          Confirm Operation
+        </button>
+      </div>
+    </form>
+
+  </div>
+</dialog>
+
+<script>
+  /**
+   * Helper to trigger confirmation modal with dynamic parameters
+   */
+  function showConfirmModal(options) {
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMessage');
+    const formEl = document.getElementById('confirmModalForm');
+    const targetEl = document.getElementById('confirmModalTargetId');
+    const btnEl = document.getElementById('confirmModalBtn');
+
+    if (titleEl && options.title) titleEl.textContent = options.title;
+    if (msgEl && options.message) msgEl.textContent = options.message;
+    if (formEl && options.actionUrl) formEl.action = options.actionUrl;
+    if (targetEl && options.targetId) targetEl.value = options.targetId;
+    if (btnEl && options.buttonText) btnEl.textContent = options.buttonText;
+    if (btnEl && options.buttonClass) btnEl.className = options.buttonClass;
+
+    openModal('confirmModal');
+  }
+</script>
+
+
+  <!-- Core Security & Interaction Primitives -->
+  <script>
+    /**
+     * Extracts CSRF token safely from DOM or cookies
+     */
+    function getCsrfToken() {
+      const metaTag = document.querySelector('meta[name="csrf-token"]');
+      if (metaTag && metaTag.content) {
+        return metaTag.content;
+      }
+      const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (tokenInput) {
+        return tokenInput.value;
+      }
+      const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+      return cookieMatch ? cookieMatch[1] : '';
+    }
+
+    /**
+     * Generic Modal Controller for Accessible HTML5 <dialog>
+     */
+    function openModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else if (dialog) {
+        dialog.classList.remove('hidden');
+      }
+    }
+
+    function closeModal(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog && typeof dialog.close === 'function') {
+        dialog.close();
+      } else if (dialog) {
+        dialog.classList.add('hidden');
+      }
+    }
+
+    // Dismiss message alerts
+    function dismissAlert(alertEl) {
+      if (alertEl) {
+        alertEl.style.opacity = '0';
+        setTimeout(() => alertEl.remove(), 200);
+      }
+    }
+  </script>
+
+  
+</body>
+</html>
