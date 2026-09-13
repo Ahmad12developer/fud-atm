@@ -56,12 +56,20 @@ class SchedulingResult:
 
 
 class BoundedScheduler:
-    def __init__(self, timetable: Timetable, weights: Optional[OptimizationSetting] = None):
+    def __init__(
+        self,
+        timetable: Timetable,
+        weights: Optional[OptimizationSetting] = None,
+        max_nodes: Optional[int] = None,
+        time_budget_seconds: Optional[float] = None
+    ):
         self.timetable = timetable
         self.session = timetable.session
         self.semester = timetable.semester
         self.faculty = timetable.faculty
         self.weights = weights or OptimizationSetting.objects.first() or OptimizationSetting()
+        self.max_nodes = max_nodes or MAX_NODES
+        self.time_budget_seconds = time_budget_seconds or TIME_BUDGET_SECONDS
 
         self.nodes_explored = 0
         self.start_time = 0.0
@@ -147,7 +155,7 @@ class BoundedScheduler:
         except SchedulerTimeout:
             return SchedulingResult(
                 success=False,
-                message=f"Computation exceeded time budget ({TIME_BUDGET_SECONDS}s). Rolled back safely.",
+                message=f"Computation exceeded time budget ({self.time_budget_seconds}s). Rolled back safely.",
                 nodes_explored=self.nodes_explored,
                 elapsed_seconds=time.time() - self.start_time,
                 timed_out=True
@@ -155,7 +163,7 @@ class BoundedScheduler:
         except SchedulerNodeLimitExceeded:
             return SchedulingResult(
                 success=False,
-                message=f"Search tree limit reached ({MAX_NODES} nodes). Rolled back safely.",
+                message=f"Search tree limit reached ({self.max_nodes} nodes). Rolled back safely.",
                 nodes_explored=self.nodes_explored,
                 elapsed_seconds=time.time() - self.start_time,
                 timed_out=True
@@ -215,10 +223,10 @@ class BoundedScheduler:
         """Recursive backtracking search with Forward Checking and Hard Bounds."""
         self.nodes_explored += 1
 
-        if self.nodes_explored > MAX_NODES:
+        if self.nodes_explored > self.max_nodes:
             raise SchedulerNodeLimitExceeded()
 
-        if time.time() - self.start_time > TIME_BUDGET_SECONDS:
+        if time.time() - self.start_time > self.time_budget_seconds:
             raise SchedulerTimeout()
 
         if course_index == len(courses):

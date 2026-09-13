@@ -47,30 +47,32 @@ def commit_slot_override(
     if not justification_clean:
         raise ValidationError("Administrative justification is strictly required for slot overrides.")
 
-    with transaction.atomic():
-        # 1. Acquire row-level lock on the target timetable
-        try:
-            timetable = Timetable.objects.select_for_update().get(pk=timetable_id)
-        except Timetable.DoesNotExist:
-            raise ValidationError(f"Timetable ID {timetable_id} does not exist.")
+    # 1. Anti-BOLA Authorization Guard (Executed before mutable atomic transaction)
+    # This guarantees that security violation audit logs are committed even when PermissionDenied is raised
+    try:
+        timetable_check = Timetable.objects.get(pk=timetable_id)
+    except Timetable.DoesNotExist:
+        raise ValidationError(f"Timetable ID {timetable_id} does not exist.")
 
-        # 2. Anti-BOLA Authorization Guard:
-        # FACULTY_ADMIN can only mutate timetables assigned to their own faculty
-        if request.user.role == User.Role.FACULTY_ADMIN:
-            if request.user.faculty_id != timetable.faculty_id:
-                log_audit(
-                    action="BOLA_BLOCKED",
-                    entity_type="TIMETABLE",
-                    entity_id=str(timetable_id),
-                    user=request.user,
-                    request=request,
-                    details={
-                        'user_faculty_id': request.user.faculty_id,
-                        'target_faculty_id': timetable.faculty_id,
-                        'attempted_override': True
-                    }
-                )
-                raise PermissionDenied("Cross-faculty override forbidden (BOLA prevention).")
+    if request.user.role == User.Role.FACULTY_ADMIN:
+        if request.user.faculty_id != timetable_check.faculty_id:
+            log_audit(
+                action="BOLA_BLOCKED",
+                entity_type="TIMETABLE",
+                entity_id=str(timetable_id),
+                user=request.user,
+                request=request,
+                details={
+                    'user_faculty_id': request.user.faculty_id,
+                    'target_faculty_id': timetable_check.faculty_id,
+                    'attempted_override': True
+                }
+            )
+            raise PermissionDenied("Cross-faculty override forbidden (BOLA prevention).")
+
+    with transaction.atomic():
+        # 2. Acquire row-level lock on the target timetable
+        timetable = Timetable.objects.select_for_update().get(pk=timetable_id)
 
         # 3. Acquire row-level lock on the mutable allocation
         try:

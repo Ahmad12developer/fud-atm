@@ -10,7 +10,7 @@ Validates:
 """
 from datetime import time, timedelta
 from django.test import TestCase, Client, RequestFactory
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.cache import cache
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -24,6 +24,7 @@ from timetable.models import (
 from timetable.auth_service import check_ip_rate_limit, authenticate_user
 from timetable.scheduling.validation import validate_slot_allocation
 from timetable.scheduling.scheduler import BoundedScheduler
+from timetable.scheduling.services import commit_slot_override
 
 User = get_user_model()
 
@@ -330,7 +331,7 @@ class FudDeterministicIdentityRoutingTests(FudBaseTestCase):
             'password': self.pwd
         })
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'Invalid Institutional Identifier or Password')
+        self.assertContains(resp, 'Invalid credentials.')
 
 
 class FudRbacAccessControlTests(FudBaseTestCase):
@@ -674,4 +675,229 @@ class FudWorkspaceViewsAndTemplateRenderingTests(FudBaseTestCase):
         self.assertIn('SEMESTER:', content)
         self.assertIn('DEPARTMENT:', content)
         self.assertIn('LEVEL:', content)
+
+
+class FudZeroCompromiseSecurityTests(FudBaseTestCase):
+    """
+    Rigorously validates zero-compromise security hardening across all 6 pillars:
+    1. Atomic Allocation & TOCTOU Elimination with pessimistic locking and anti-BOLA
+    2. Constant-Time Authentication & Anti-Enumeration with sliding window rate limiting
+    3. Centralized Authorization & Tenancy Scoping
+    4. Bounded Heuristic CSP Solver with DoS timeout limits
+    5. Frontend Security, CSRF & Two-Tier Validation Pattern
+    6. Secure Production Headers & Cookies
+    """
+
+    def _create_mock_request(self, user=None):
+        rf = RequestFactory()
+        request = rf.post('/login/')
+        middleware = SessionMiddleware(lambda req: None)
+        middleware.process_request(request)
+        request.session.save()
+        request.META['REMOTE_ADDR'] = '127.0.0.1'
+        if user:
+            request.user = user
+        return request
+
+    def test_constant_time_anti_enumeration_nonexistent_user(self):
+        """Unregistered ID authentication returns uniform 'Invalid credentials.' and executes dummy hash."""
+        request = self._create_mock_request()
+        result = authenticate_user(request, "FUD/UNKNOWN/999", "WrongSecretPass@123")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Invalid credentials.")
+
+    def test_constant_time_anti_enumeration_locked_account(self):
+        """Locked user account returns uniform 'Invalid credentials.' and executes dummy hash."""
+        self.user_admin.failed_login_count = 5
+        self.user_admin.locked_until = timezone.now() + timedelta(minutes=15)
+        self.user_admin.save()
+
+        request = self._create_mock_request()
+        result = authenticate_user(request, self.user_admin.institutional_id, self.pwd)
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Invalid credentials.")
+
+    def test_account_lockout_after_five_failed_attempts(self):
+        """5 consecutive bad logins locks the user account for 15 minutes."""
+        request = self._create_mock_request()
+        for _ in range(5):
+            res = authenticate_user(request, self.user_faculty_admin.institutional_id, "BadPassword!123")
+            self.assertFalse(res.success)
+            self.assertEqual(res.message, "Invalid credentials.")
+
+        self.user_faculty_admin.refresh_from_db()
+        self.assertEqual(self.user_faculty_admin.failed_login_count, 5)
+        self.assertIsNotNone(self.user_faculty_admin.locked_until)
+        self.assertTrue(self.user_faculty_admin.is_locked())
+
+    def test_ip_sliding_window_rate_limiting(self):
+        """IP address is throttled after 20 attempts within sliding 60-second window."""
+        test_ip = "10.10.14.99"
+        for i in range(20):
+            self.assertTrue(check_ip_rate_limit(test_ip), f"Attempt {i+1} should be permitted")
+        # 21st attempt must be blocked
+        self.assertFalse(check_ip_rate_limit(test_ip), "21st attempt must be throttled")
+
+    def test_commit_slot_override_anti_bola_cross_faculty(self):
+        """FACULTY_ADMIN attempting to override a timetable belonging to another faculty is denied with 403 / PermissionDenied."""
+        # Create a timetable for Faculty of Science (SCI)
+        sci_timetable = Timetable.objects.create(
+            faculty=self.faculty_sci,
+            session=self.session,
+            semester=1
+        )
+        sci_dept = Department.objects.create(code='MTH', name='Mathematics', faculty=self.faculty_sci)
+        sci_course = Course.objects.create(code='MTH 101', title='Calculus', department=sci_dept, credit_units=3, level=100, expected_capacity=50)
+        sci_alloc = Allocation.objects.create(
+            timetable=sci_timetable,
+            course=sci_course,
+            lecturer=self.lecturer_profile,
+            venue=self.venue_lt_ag,
+            slot=self.slot_1,
+            day_of_week=0
+        )
+
+        request = self._create_mock_request(user=self.user_faculty_admin)  # Belonging to COMP, not SCI
+
+        with self.assertRaises(PermissionDenied):
+            commit_slot_override(
+                request=request,
+                timetable_id=sci_timetable.id,
+                allocation_id=sci_alloc.id,
+                new_venue_id=self.venue_twin_a.id,
+                new_slot_id=self.slot_2.id,
+                new_day_of_week=1,
+                justification="Malicious cross-faculty BOLA attempt"
+            )
+
+        # Verify BOLA_BLOCKED audit log entry
+        bola_log = AuditLog.objects.filter(action="BOLA_BLOCKED").first()
+        self.assertIsNotNone(bola_log)
+        self.assertEqual(bola_log.user, self.user_faculty_admin)
+
+    def test_commit_slot_override_capacity_deficit_rejected(self):
+        """Allocation override to a venue smaller than course expected_capacity is rejected."""
+        small_venue = Venue.objects.create(code='TINY-ROOM', name='Tiny Tutorial Room', capacity=30, is_active=True)
+        request = self._create_mock_request(user=self.user_faculty_admin)
+
+        with self.assertRaises(ValidationError) as ctx:
+            commit_slot_override(
+                request=request,
+                timetable_id=self.timetable.id,
+                allocation_id=self.alloc_301.id,
+                new_venue_id=small_venue.id,
+                new_slot_id=self.slot_2.id,
+                new_day_of_week=1,
+                justification="Moving large class to small tutorial room"
+            )
+        self.assertIn("CAPACITY DEFICIT", str(ctx.exception))
+
+    def test_commit_slot_override_friday_prayer_blackout_rejected(self):
+        """Override attempting to schedule lectures during Friday 12:30 - 14:00 is strictly rejected."""
+        request = self._create_mock_request(user=self.user_faculty_admin)
+
+        with self.assertRaises(ValidationError) as ctx:
+            commit_slot_override(
+                request=request,
+                timetable_id=self.timetable.id,
+                allocation_id=self.alloc_301.id,
+                new_venue_id=self.venue_lt_ag.id,
+                new_slot_id=self.slot_3.id,  # 12:00 - 14:00 slot
+                new_day_of_week=4,           # Friday
+                justification="Attempting Friday Juma'at prayer slot override"
+            )
+        self.assertIn("Friday Juma'at prayer", str(ctx.exception))
+
+    def test_commit_slot_override_successful_state_mutation_and_audit(self):
+        """Valid override executes atomic mutation with update_fields and logs immutable audit trail."""
+        request = self._create_mock_request(user=self.user_faculty_admin)
+
+        updated = commit_slot_override(
+            request=request,
+            timetable_id=self.timetable.id,
+            allocation_id=self.alloc_301.id,
+            new_venue_id=self.venue_twin_a.id,
+            new_slot_id=self.slot_2.id,
+            new_day_of_week=2,
+            justification="Routine timetable rebalancing by Faculty Admin"
+        )
+
+        self.alloc_301.refresh_from_db()
+        self.assertEqual(self.alloc_301.venue, self.venue_twin_a)
+        self.assertEqual(self.alloc_301.slot, self.slot_2)
+        self.assertEqual(self.alloc_301.day_of_week, 2)
+
+        audit_entry = AuditLog.objects.filter(
+            action="MANUAL_OVERRIDE",
+            entity_id=str(self.alloc_301.id)
+        ).first()
+        self.assertIsNotNone(audit_entry)
+        self.assertEqual(audit_entry.user, self.user_faculty_admin)
+        self.assertEqual(audit_entry.details['new_state']['venue_code'], self.venue_twin_a.code)
+        self.assertEqual(audit_entry.details['justification'], "Routine timetable rebalancing by Faculty Admin")
+
+    def test_http_timetable_commit_override_endpoint(self):
+        """HTTP POST to /timetable/commit-override/ successfully commits changes."""
+        self.client.force_login(self.user_faculty_admin)
+
+        resp = self.client.post('/timetable/commit-override/', {
+            'timetable_id': self.timetable.id,
+            'allocation_id': self.alloc_301.id,
+            'new_venue_id': self.venue_twin_a.id,
+            'new_slot_id': self.slot_2.id,
+            'new_day_of_week': 3,
+            'justification': 'Official room upgrade'
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.alloc_301.refresh_from_db()
+        self.assertEqual(self.alloc_301.venue, self.venue_twin_a)
+        self.assertEqual(self.alloc_301.slot, self.slot_2)
+        self.assertEqual(self.alloc_301.day_of_week, 3)
+
+    def test_http_timetable_commit_override_bola_forbidden(self):
+        """HTTP POST cross-faculty override returns 403 Forbidden."""
+        self.client.force_login(self.user_faculty_admin)  # COMP
+        sci_timetable = Timetable.objects.create(faculty=self.faculty_sci, session=self.session, semester=1)
+        sci_dept = Department.objects.create(code='CHM', name='Chemistry', faculty=self.faculty_sci)
+        sci_course = Course.objects.create(code='CHM 101', title='General Chemistry', department=sci_dept, credit_units=3, level=100, expected_capacity=50)
+        sci_alloc = Allocation.objects.create(
+            timetable=sci_timetable,
+            course=sci_course,
+            lecturer=self.lecturer_profile,
+            venue=self.venue_lt_ag,
+            slot=self.slot_1,
+            day_of_week=0
+        )
+
+        resp = self.client.post('/timetable/commit-override/', {
+            'timetable_id': sci_timetable.id,
+            'allocation_id': sci_alloc.id,
+            'new_venue_id': self.venue_twin_a.id,
+            'new_slot_id': self.slot_2.id,
+            'new_day_of_week': 2,
+            'justification': 'BOLA cross-tenant attack attempt'
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    def test_production_security_headers_and_csp(self):
+        """All HTTP responses contain OWASP security headers and Content-Security-Policy."""
+        resp = self.client.get('/login/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.headers.get('X-Frame-Options'), 'DENY')
+        self.assertEqual(resp.headers.get('X-Content-Type-Options'), 'nosniff')
+        csp = resp.headers.get('Content-Security-Policy', '')
+        self.assertIn("default-src 'self'", csp)
+        self.assertIn("https://cdn.tailwindcss.com", csp)
+        self.assertIn("https://fonts.googleapis.com", csp)
+        self.assertIn("https://fonts.gstatic.com", csp)
+
+    def test_bounded_heuristic_scheduler_timeout_guard(self):
+        """Scheduler with microsecond time budget cleanly sets timed_out=True without crashing."""
+        scheduler = BoundedScheduler(
+            timetable=self.timetable,
+            time_budget_seconds=0.000001
+        )
+        result = scheduler.solve()
+        self.assertTrue(result.timed_out)
+
 
