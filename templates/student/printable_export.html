@@ -221,7 +221,7 @@
       <div><strong>SEMESTER:</strong> {{ ACADEMIC_SEMESTER|default:"Harmattan (1st) Semester" }}</div>
       <div><strong>FACULTY:</strong> {{ user.faculty.name|default:"Faculty of Computing & IT" }}</div>
       <div><strong>DEPARTMENT:</strong> {{ user.department.name|default:"Computer Science" }}</div>
-      <div><strong>LEVEL:</strong> 300 Level</div>
+      <div><strong>LEVEL:</strong> {{ selected_level }} Level</div>
     </div>
   </header>
 
@@ -230,102 +230,35 @@
     <thead>
       <tr>
         <th style="width: 80px;">DAY</th>
-        <th style="width: 18%;">08:00 AM - 10:00 AM</th>
-        <th style="width: 18%;">10:00 AM - 12:00 PM</th>
-        <th style="width: 16%;">12:00 PM - 02:00 PM</th>
-        <th style="width: 18%;">02:00 PM - 04:00 PM</th>
-        <th style="width: 18%;">04:00 PM - 06:00 PM</th>
+        {% for slot in slots %}
+        <th>{{ slot.start_time|time:"h:i A" }} - {{ slot.end_time|time:"h:i A" }}</th>
+        {% endfor %}
       </tr>
     </thead>
     <tbody>
-
-      <!-- Monday -->
+      {% for row in grid_rows %}
       <tr>
-        <td class="day-col">MONDAY</td>
-        <td>
-          <div class="cell-course">CSC 301 (3 CU)</div>
-          <div class="cell-title">Structured Systems Analysis</div>
-          <div class="cell-meta">Abubakar Gimba LT &bull; Dr. Aminu</div>
-        </td>
-        <td>
-          <div class="cell-course">CSC 305 (3 CU)</div>
-          <div class="cell-title">Database Systems</div>
-          <div class="cell-meta">Twin Theatre A &bull; Mal. Haruna</div>
-        </td>
-        <td style="vertical-align: middle; color: #555;">BREAK</td>
-        <td>
-          <div class="cell-course">CSC 311 (2 CU - LAB)</div>
-          <div class="cell-title">Operating Systems Lab</div>
-          <div class="cell-meta">PTDF Lab &bull; Dr. Garba</div>
-        </td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
+        <td class="day-col">{{ row.day_name|upper }}</td>
+        {% for cell in row.cells %}
+          {% if cell.is_friday_prayer %}
+            <td class="prayer-slot">
+              JUMA'AT PRAYER BREAK<br>
+              <span style="font-size: 8px; font-weight: normal;">(12:30 PM - 02:00 PM)</span>
+            </td>
+          {% elif cell.allocations %}
+            <td>
+              {% for alloc in cell.allocations %}
+                <div class="cell-course">{{ alloc.course.code }} ({{ alloc.course.credit_units }} CU)</div>
+                <div class="cell-title">{{ alloc.course.title }}</div>
+                <div class="cell-meta">{{ alloc.venue.name }} &bull; {{ alloc.lecturer.user.get_full_name|default:alloc.lecturer.user.username }}</div>
+              {% endfor %}
+            </td>
+          {% else %}
+            <td style="vertical-align: middle; color: #888; font-size: 10px;">FREE</td>
+          {% endif %}
+        {% endfor %}
       </tr>
-
-      <!-- Tuesday -->
-      <tr>
-        <td class="day-col">TUESDAY</td>
-        <td>
-          <div class="cell-course">SE 301 (3 CU)</div>
-          <div class="cell-title">Software Architecture</div>
-          <div class="cell-meta">Twin Theatre B &bull; Dr. Fatima</div>
-        </td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
-        <td style="vertical-align: middle; color: #555;">BREAK</td>
-        <td>
-          <div class="cell-course">CSC 307 (3 CU)</div>
-          <div class="cell-title">Algorithms & Complexity</div>
-          <div class="cell-meta">Twin Theatre A &bull; Dr. Aminu</div>
-        </td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
-      </tr>
-
-      <!-- Wednesday -->
-      <tr>
-        <td class="day-col">WEDNESDAY</td>
-        <td colspan="5" style="vertical-align: middle; color: #444; font-style: italic; padding: 15px;">
-          DESIGNATED RESEARCH, PRACTICAL PROJECTS & GENERAL STUDIES (GST) SESSION
-        </td>
-      </tr>
-
-      <!-- Thursday -->
-      <tr>
-        <td class="day-col">THURSDAY</td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
-        <td>
-          <div class="cell-course">CSC 301 (Tutorial Group A)</div>
-          <div class="cell-title">Systems Analysis Clinic</div>
-          <div class="cell-meta">Hall 4 &bull; Dr. Aminu</div>
-        </td>
-        <td style="vertical-align: middle; color: #555;">BREAK</td>
-        <td>
-          <div class="cell-course">CYB 301 (3 CU)</div>
-          <div class="cell-title">Network Security</div>
-          <div class="cell-meta">Abubakar Gimba LT &bull; Mal. Haruna</div>
-        </td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
-      </tr>
-
-      <!-- Friday -->
-      <tr>
-        <td class="day-col">FRIDAY</td>
-        <td>
-          <div class="cell-course">CSC 309 (3 CU)</div>
-          <div class="cell-title">Artificial Intelligence</div>
-          <div class="cell-meta">Twin Theatre B &bull; Prof. B. Dutse</div>
-        </td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
-        <td class="prayer-slot">
-          JUMA'AT PRAYER BREAK<br>
-          (12:30 PM - 02:00 PM)
-        </td>
-        <td>
-          <div class="cell-course">SE 305 (2 CU - LAB)</div>
-          <div class="cell-title">Software Testing Lab</div>
-          <div class="cell-meta">PTDF Lab &bull; Dr. Garba</div>
-        </td>
-        <td style="vertical-align: middle; color: #777;">FREE</td>
-      </tr>
-
+      {% endfor %}
     </tbody>
   </table>
 

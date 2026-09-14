@@ -41,8 +41,8 @@
   <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
     <div>
       <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Weekly Contact Hours</div>
-      <div class="text-2xl font-black text-[#1B4D3E] mt-1">6 Hours / Week</div>
-      <div class="text-[11px] text-slate-500 font-medium mt-1">Within Senate Maximum (12 hrs)</div>
+      <div class="text-2xl font-black text-[#1B4D3E] mt-1">{{ total_contact_hours }} Hours / Week</div>
+      <div class="text-[11px] text-slate-500 font-medium mt-1">{% if total_contact_hours <= 12 %}Within Senate Maximum (12 hrs){% else %}Exceeds Standard Senate Load{% endif %}</div>
     </div>
     <div class="w-11 h-11 rounded-xl bg-emerald-50 text-[#1B4D3E] flex items-center justify-center font-bold">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -52,8 +52,10 @@
   <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
     <div>
       <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Assigned Courses</div>
-      <div class="text-2xl font-black text-slate-900 mt-1">2 Courses</div>
-      <div class="text-[11px] text-slate-500 font-medium mt-1">CSC 301 &bull; CSC 307</div>
+      <div class="text-2xl font-black text-slate-900 mt-1">{{ assigned_courses_count }} Course{{ assigned_courses_count|pluralize }}</div>
+      <div class="text-[11px] text-slate-500 font-medium mt-1 truncate max-w-[200px]">
+        {% for c in assigned_courses_list %}{{ c }}{% if not forloop.last %} &bull; {% endif %}{% empty %}None{% endfor %}
+      </div>
     </div>
     <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -63,8 +65,10 @@
   <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between">
     <div>
       <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Designated Venues</div>
-      <div class="text-2xl font-black text-[#5C4033] mt-1">2 Halls</div>
-      <div class="text-[11px] text-slate-500 font-medium mt-1">Abubakar Gimba LT &bull; Twin Theatre A</div>
+      <div class="text-2xl font-black text-[#5C4033] mt-1">{{ designated_venues_count }} Venue{{ designated_venues_count|pluralize }}</div>
+      <div class="text-[11px] text-slate-500 font-medium mt-1 truncate max-w-[200px]">
+        {% for v in designated_venues_list %}{{ v }}{% if not forloop.last %} &bull; {% endif %}{% empty %}None{% endfor %}
+      </div>
     </div>
     <div class="w-11 h-11 rounded-xl bg-[#5C4033]/10 text-[#5C4033] flex items-center justify-center font-bold">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
@@ -79,155 +83,52 @@
       <thead>
         <tr class="bg-[#F8F9FA] text-slate-700 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
           <th class="p-3 border-r border-[#E2E8F0] text-center w-28 bg-[#1B4D3E] text-white">Day</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">08:00 - 10:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">10:00 - 12:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">12:00 - 14:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">14:00 - 16:00</th>
-          <th class="p-3 text-center w-36">16:00 - 18:00</th>
+          {% for slot in slots %}
+          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody class="divide-y divide-[#E2E8F0] text-slate-800">
-        
-        <!-- MONDAY -->
+        {% for row in grid_rows %}
         <tr class="h-28">
           <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Monday
+            {{ row.day_name }}
           </td>
-          <!-- Mon 8-10: CSC 301 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/50">
-            <div class="h-full p-3 rounded-lg bg-white border-2 border-[#1B4D3E] shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-sm text-[#1B4D3E]">CSC 301</span>
-                  <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">Lecture</span>
+          {% for cell in row.cells %}
+            {% if cell.is_friday_prayer %}
+            <td class="p-2 border-r border-[#E2E8F0] align-middle bg-slate-100/80 text-center">
+              <div class="p-3 rounded-lg border border-slate-300 bg-slate-50 text-slate-600">
+                <div class="font-bold text-xs uppercase tracking-wider text-slate-700">Juma'at Prayer</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Senate Blackout (12:30 - 14:00)</div>
+              </div>
+            </td>
+            {% elif cell.allocations %}
+            <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/50">
+              {% for alloc in cell.allocations %}
+              <div class="h-full p-3 rounded-lg bg-white border-2 border-[#1B4D3E] shadow-sm flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-black text-sm text-[#1B4D3E]">{{ alloc.course.code }}</span>
+                    <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">Lecture</span>
+                  </div>
+                  <div class="font-semibold text-slate-800 text-xs mt-1">{{ alloc.course.title }}</div>
+                  <div class="text-[11px] text-slate-500">Cohort: {{ alloc.course.level }}L ({{ alloc.course.expected_capacity }} Students)</div>
                 </div>
-                <div class="font-semibold text-slate-800 text-xs mt-1">Structured Systems Analysis</div>
-                <div class="text-[11px] text-slate-500">Cohort: 300 Level (185 Students)</div>
-              </div>
-              <div class="flex items-center justify-between text-[11px] pt-2 border-t border-slate-100 mt-2">
-                <span class="font-mono font-bold text-slate-800">LT-AG (Abubakar Gimba)</span>
-                <span class="text-emerald-700 font-bold">2 Hours</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Office Hours / Research
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Lunch & Departmental Consultations
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-        </tr>
-
-        <!-- TUESDAY -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Tuesday
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Departmental Board Meeting
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Break
-          </td>
-          <!-- Tue 14-16: CSC 307 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/50">
-            <div class="h-full p-3 rounded-lg bg-white border-2 border-[#1B4D3E] shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-sm text-[#1B4D3E]">CSC 307</span>
-                  <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold">Override</span>
+                <div class="flex items-center justify-between text-[11px] pt-2 border-t border-slate-100 mt-2">
+                  <span class="font-mono font-bold text-slate-800">{{ alloc.venue.code }}</span>
+                  <span class="text-emerald-700 font-bold">{{ alloc.course.credit_units }} CU</span>
                 </div>
-                <div class="font-semibold text-slate-800 text-xs mt-1">Algorithms & Complexity</div>
-                <div class="text-[11px] text-slate-500">Cohort: 300 Level (215 Students)</div>
               </div>
-              <div class="flex items-center justify-between text-[11px] pt-2 border-t border-slate-100 mt-2">
-                <span class="font-mono font-bold text-slate-800">TWIN-A (Faculty Science)</span>
-                <span class="text-emerald-700 font-bold">2 Hours</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
+              {% endfor %}
+            </td>
+            {% else %}
+            <td class="p-2 border-r border-[#E2E8F0] align-middle text-center bg-slate-50/30 text-slate-400 text-xs">
+              <span class="text-[11px] font-mono text-slate-400 italic">Free</span>
+            </td>
+            {% endif %}
+          {% endfor %}
         </tr>
-
-        <!-- WEDNESDAY -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Wednesday
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium" colspan="5">
-            Designated Research & Postgraduate Supervision Day (No Undergraduate Allocations)
-          </td>
-        </tr>
-
-        <!-- THURSDAY -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Thursday
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <!-- Thu 10-12: CSC 301 Tutorial Group -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/50">
-            <div class="h-full p-3 rounded-lg bg-white border-2 border-[#1B4D3E] shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-sm text-[#1B4D3E]">CSC 301</span>
-                  <span class="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold">Tutorial</span>
-                </div>
-                <div class="font-semibold text-slate-800 text-xs mt-1">Systems Analysis Clinic</div>
-                <div class="text-[11px] text-slate-500">Cohort: Group A (90 Students)</div>
-              </div>
-              <div class="flex items-center justify-between text-[11px] pt-2 border-t border-slate-100 mt-2">
-                <span class="font-mono font-bold text-slate-800">HALL-4</span>
-                <span class="text-emerald-700 font-bold">2 Hours</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Break
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-        </tr>
-
-        <!-- FRIDAY -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Friday
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-amber-100/60 flex items-center justify-center text-amber-900 font-bold text-center">
-            Friday Juma'at Prayer Blackout Window (12:30 - 14:00)
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 bg-slate-50/50 flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-        </tr>
-
+        {% endfor %}
       </tbody>
     </table>
   </div>

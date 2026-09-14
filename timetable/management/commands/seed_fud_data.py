@@ -151,6 +151,36 @@ class Command(BaseCommand):
             u_lec_bello.set_password(password)
             u_lec_bello.save()
 
+            # Lecturer 4 (Dr. Fatima Bello)
+            u_lec_fatima, _ = User.objects.get_or_create(
+                institutional_id="FUD/LEC/2024/045",
+                defaults={
+                    'first_name': "Dr. Fatima",
+                    'last_name': "Bello",
+                    'email': "f.bello.lec@fud.edu.ng",
+                    'role': User.Role.LECTURER,
+                    'faculty': f_comp,
+                    'department': d_se
+                }
+            )
+            u_lec_fatima.set_password(password)
+            u_lec_fatima.save()
+
+            # Lecturer 5 (Dr. Usman Garba)
+            u_lec_usman, _ = User.objects.get_or_create(
+                institutional_id="FUD/LEC/2024/067",
+                defaults={
+                    'first_name': "Dr. Usman",
+                    'last_name': "Garba",
+                    'email': "u.garba@fud.edu.ng",
+                    'role': User.Role.LECTURER,
+                    'faculty': f_comp,
+                    'department': d_cyb
+                }
+            )
+            u_lec_usman.set_password(password)
+            u_lec_usman.save()
+
             # Lecturer Profiles
             l_aminu, _ = Lecturer.objects.get_or_create(
                 user=u_lec_aminu,
@@ -162,26 +192,79 @@ class Command(BaseCommand):
             )
             l_bello, _ = Lecturer.objects.get_or_create(
                 user=u_lec_bello,
-                defaults={'staff_id': "FUD/STAFF/012", 'department': d_csc, 'max_hours_per_week': 8}
+                defaults={'staff_id': "FUD/STAFF/012", 'department': d_csc, 'max_hours_per_week': 10}
+            )
+            l_fatima, _ = Lecturer.objects.get_or_create(
+                user=u_lec_fatima,
+                defaults={'staff_id': "FUD/STAFF/045", 'department': d_se, 'max_hours_per_week': 12}
+            )
+            l_usman, _ = Lecturer.objects.get_or_create(
+                user=u_lec_usman,
+                defaults={'staff_id': "FUD/STAFF/067", 'department': d_cyb, 'max_hours_per_week': 12}
             )
 
-            # Student
-            u_student, _ = User.objects.get_or_create(
-                institutional_id="FUD/CST/21/0456",
-                defaults={
-                    'first_name': "Fatima",
-                    'last_name': "Bello",
-                    'email': "f.bello@fud.edu.ng",
-                    'role': User.Role.STUDENT,
-                    'faculty': f_comp,
-                    'department': d_csc,
-                    'level': 300
-                }
-            )
-            u_student.set_password(password)
-            u_student.save()
+            # Students across all academic cohorts (100L - 500L)
+            students_data = [
+                ("FUD/CST/24/0101", "Ibrahim", "Musa", "i.musa@fud.edu.ng", d_csc, 100),
+                ("FUD/CST/23/0202", "Zainab", "Aliyu", "z.aliyu@fud.edu.ng", d_csc, 200),
+                ("FUD/CST/21/0456", "Fatima", "Bello", "f.bello@fud.edu.ng", d_csc, 300),
+                ("FUD/CST/20/0404", "Usman", "Danladi", "u.danladi@fud.edu.ng", d_csc, 400),
+                ("FUD/CST/19/0505", "Aisha", "Mohammed", "a.mohammed@fud.edu.ng", d_se, 500),
+            ]
+            for s_id, fn, ln, em, dep, lvl in students_data:
+                s_u, _ = User.objects.get_or_create(
+                    institutional_id=s_id,
+                    defaults={
+                        'first_name': fn,
+                        'last_name': ln,
+                        'email': em,
+                        'role': User.Role.STUDENT,
+                        'faculty': f_comp,
+                        'department': dep,
+                        'level': lvl
+                    }
+                )
+                s_u.set_password(password)
+                s_u.save()
 
-            # 7. Courses
+            # 7. Courses across all Levels (100L - 500L)
+            # 100 Level
+            c_101, _ = Course.objects.get_or_create(
+                code="CSC 101",
+                defaults={'title': "Introduction to Computer Science & Problem Solving", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 100, 'semester': 1, 'expected_capacity': 220}
+            )
+            c_103, _ = Course.objects.get_or_create(
+                code="CSC 103",
+                defaults={'title': "Computer Logic & Digital Electronics", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 100, 'semester': 1, 'expected_capacity': 200}
+            )
+            c_se101, _ = Course.objects.get_or_create(
+                code="SE 101",
+                defaults={'title': "Introduction to Software Engineering", 'credit_units': 2, 'contact_hours': 2, 'department': d_se, 'level': 100, 'semester': 1, 'expected_capacity': 120}
+            )
+            c_cyb101, _ = Course.objects.get_or_create(
+                code="CYB 101",
+                defaults={'title': "Fundamentals of Cyber Security", 'credit_units': 2, 'contact_hours': 2, 'department': d_cyb, 'level': 100, 'semester': 1, 'expected_capacity': 130}
+            )
+
+            # 200 Level
+            c_201, _ = Course.objects.get_or_create(
+                code="CSC 201",
+                defaults={'title': "Computer Programming I (Python & C++)", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 200, 'semester': 1, 'expected_capacity': 180}
+            )
+            c_203, _ = Course.objects.get_or_create(
+                code="CSC 203",
+                defaults={'title': "Discrete Mathematical Structures", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 200, 'semester': 1, 'expected_capacity': 170}
+            )
+            c_se201, _ = Course.objects.get_or_create(
+                code="SE 201",
+                defaults={'title': "Software Requirements Engineering", 'credit_units': 3, 'contact_hours': 2, 'department': d_se, 'level': 200, 'semester': 1, 'expected_capacity': 110}
+            )
+            c_cyb201, _ = Course.objects.get_or_create(
+                code="CYB 201",
+                defaults={'title': "Digital Forensics Fundamentals", 'credit_units': 2, 'contact_hours': 2, 'department': d_cyb, 'level': 200, 'semester': 1, 'expected_capacity': 100}
+            )
+
+            # 300 Level
             c_301, _ = Course.objects.get_or_create(
                 code="CSC 301",
                 defaults={'title': "Structured Systems Analysis & Design", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 300, 'semester': 1, 'expected_capacity': 185}
@@ -211,6 +294,42 @@ class Command(BaseCommand):
                 defaults={'title': "Network Security & Cryptography", 'credit_units': 3, 'contact_hours': 2, 'department': d_cyb, 'level': 300, 'semester': 1, 'expected_capacity': 150}
             )
 
+            # 400 Level
+            c_401, _ = Course.objects.get_or_create(
+                code="CSC 401",
+                defaults={'title': "Organization of Programming Languages & Compilers", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 400, 'semester': 1, 'expected_capacity': 160}
+            )
+            c_403, _ = Course.objects.get_or_create(
+                code="CSC 403",
+                defaults={'title': "Software Engineering Practice & Agile Methods", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 400, 'semester': 1, 'expected_capacity': 150}
+            )
+            c_405, _ = Course.objects.get_or_create(
+                code="CSC 405",
+                defaults={'title': "Advanced Computer Networks & Telecommunications", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 400, 'semester': 1, 'expected_capacity': 140}
+            )
+            c_se401, _ = Course.objects.get_or_create(
+                code="SE 401",
+                defaults={'title': "Software Quality Assurance & Testing", 'credit_units': 3, 'contact_hours': 2, 'department': d_se, 'level': 400, 'semester': 1, 'expected_capacity': 90}
+            )
+            c_cyb401, _ = Course.objects.get_or_create(
+                code="CYB 401",
+                defaults={'title': "Penetration Testing & Vulnerability Assessment", 'credit_units': 3, 'contact_hours': 2, 'department': d_cyb, 'level': 400, 'semester': 1, 'expected_capacity': 80}
+            )
+
+            # 500 Level
+            c_501, _ = Course.objects.get_or_create(
+                code="CSC 501",
+                defaults={'title': "Distributed Systems & Cloud Computing Architecture", 'credit_units': 3, 'contact_hours': 2, 'department': d_csc, 'level': 500, 'semester': 1, 'expected_capacity': 80}
+            )
+            c_se501, _ = Course.objects.get_or_create(
+                code="SE 501",
+                defaults={'title': "Safety-Critical Software Architectures", 'credit_units': 3, 'contact_hours': 2, 'department': d_se, 'level': 500, 'semester': 1, 'expected_capacity': 75}
+            )
+            c_cyb501, _ = Course.objects.get_or_create(
+                code="CYB 501",
+                defaults={'title': "Cryptographic Engineering & Security Protocols", 'credit_units': 3, 'contact_hours': 2, 'department': d_cyb, 'level': 500, 'semester': 1, 'expected_capacity': 70}
+            )
+
             # 8. Timetable for Faculty of Computing
             tt, _ = Timetable.objects.get_or_create(
                 session=session,
@@ -219,24 +338,62 @@ class Command(BaseCommand):
                 defaults={'status': Timetable.Status.FACULTY_APPROVED}
             )
 
-            # 9. Baseline 0-Conflict Allocations
-            # Clear and create clean sample allocations
+            # 9. Baseline 0-Conflict Allocations (Full Week: Monday=0 to Saturday=5)
             Allocation.objects.filter(timetable=tt).delete()
             allocations_data = [
-                # Mon 08:00 - 10:00 (slot 1): CSC 301 @ LT-AG (Dr. Aminu)
-                (c_301, l_aminu, v_ag, 0, slots[1]),
-                # Mon 10:00 - 12:00 (slot 2): CSC 305 @ TWIN-A (Mal. Kabiru)
-                (c_305, l_kabiru, v_ta, 0, slots[2]),
-                # Mon 14:00 - 16:00 (slot 4): CSC 311 @ LAB-PTDF (Mal. Kabiru)
-                (c_311, l_kabiru, v_lab, 0, slots[4]),
-                # Tue 08:00 - 10:00 (slot 1): SE 301 @ TWIN-B (Mal. Kabiru)
-                (c_se301, l_kabiru, v_tb, 1, slots[1]),
-                # Tue 14:00 - 16:00 (slot 4): CSC 307 @ TWIN-A (Dr. Aminu)
-                (c_307, l_aminu, v_ta, 1, slots[4]),
-                # Thu 10:00 - 12:00 (slot 2): CYB 301 @ LT-AG (Dr. Aminu)
-                (c_cyb301, l_aminu, v_ag, 3, slots[2]),
-                # Fri 08:00 - 10:00 (slot 1): CSC 309 @ TWIN-B (Prof. Bello)
-                (c_309, l_bello, v_tb, 4, slots[1]),
+                # MONDAY (Day 0)
+                (c_301, l_aminu, v_ag, 0, slots[1]),     # 300L CSC 08-10
+                (c_101, l_bello, v_ta, 0, slots[1]),     # 100L CSC 08-10
+                (c_305, l_kabiru, v_ta, 0, slots[2]),    # 300L CSC 10-12
+                (c_201, l_fatima, v_tb, 0, slots[2]),    # 200L CSC 10-12
+                (c_311, l_kabiru, v_lab, 0, slots[4]),   # 300L CSC 14-16 (Lab)
+                (c_401, l_bello, v_ta, 0, slots[4]),     # 400L CSC 14-16
+                (c_se101, l_fatima, v_tb, 0, slots[4]),  # 100L SE  14-16
+                (c_se501, l_fatima, v_lab, 0, slots[5]), # 500L SE  16-18
+
+                # TUESDAY (Day 1)
+                (c_se301, l_fatima, v_tb, 1, slots[1]),  # 300L SE  08-10
+                (c_203, l_aminu, v_ta, 1, slots[1]),     # 200L CSC 08-10
+                (c_103, l_bello, v_ag, 1, slots[2]),     # 100L CSC 10-12
+                (c_se401, l_kabiru, v_h4, 1, slots[2]),  # 400L SE  10-12
+                (c_307, l_aminu, v_ta, 1, slots[4]),     # 300L CSC 14-16
+                (c_501, l_bello, v_h4, 1, slots[4]),     # 500L CSC 14-16
+                (c_se201, l_fatima, v_tb, 1, slots[4]),  # 200L SE  14-16
+
+                # WEDNESDAY (Day 2)
+                (c_cyb101, l_usman, v_tb, 2, slots[1]),  # 100L CYB 08-10
+                (c_403, l_bello, v_ta, 2, slots[1]),     # 400L CSC 08-10
+                (c_cyb201, l_usman, v_h4, 2, slots[2]),  # 200L CYB 10-12
+                (c_301, l_aminu, v_ag, 2, slots[2]),     # 300L CSC 10-12
+                (c_cyb401, l_usman, v_h4, 2, slots[4]),  # 400L CYB 14-16
+                (c_501, l_aminu, v_ta, 2, slots[5]),     # 500L CSC 16-18
+
+                # THURSDAY (Day 3)
+                (c_201, l_fatima, v_ta, 3, slots[1]),    # 200L CSC 08-10
+                (c_se101, l_kabiru, v_tb, 3, slots[1]),  # 100L SE  08-10
+                (c_cyb301, l_usman, v_ag, 3, slots[2]),  # 300L CYB 10-12
+                (c_405, l_bello, v_tb, 3, slots[2]),     # 400L CSC 10-12
+                (c_se201, l_fatima, v_tb, 3, slots[4]),  # 200L SE  14-16
+                (c_103, l_aminu, v_ta, 3, slots[4]),     # 100L CSC 14-16
+                (c_se501, l_kabiru, v_lab, 3, slots[4]), # 500L SE  14-16
+
+                # FRIDAY (Day 4 - Strictly No Slot 3 [12:00-14:00] for Juma'at Prayer)
+                (c_309, l_bello, v_tb, 4, slots[1]),     # 300L CSC 08-10
+                (c_101, l_aminu, v_ag, 4, slots[1]),     # 100L CSC 08-10
+                (c_203, l_aminu, v_ta, 4, slots[2]),     # 200L CSC 10-12
+                (c_401, l_bello, v_tb, 4, slots[2]),     # 400L CSC 10-12
+                (c_se301, l_kabiru, v_tb, 4, slots[4]),  # 300L SE  14-16
+                (c_se401, l_fatima, v_h4, 4, slots[4]),  # 400L SE  14-16
+                (c_cyb501, l_usman, v_lab, 4, slots[4]), # 500L CYB 14-16
+
+                # SATURDAY (Day 5 - Full Operational Academic Day)
+                (c_405, l_aminu, v_ta, 5, slots[1]),     # 400L CSC 08-10
+                (c_cyb201, l_usman, v_h4, 5, slots[1]),  # 200L CYB 08-10
+                (c_cyb101, l_usman, v_tb, 5, slots[2]),  # 100L CYB 10-12
+                (c_cyb301, l_bello, v_ag, 5, slots[2]),  # 300L CYB 10-12
+                (c_501, l_aminu, v_h4, 5, slots[3]),     # 500L CSC 12-14
+                (c_cyb401, l_usman, v_h4, 5, slots[4]),  # 400L CYB 14-16
+                (c_201, l_fatima, v_tb, 5, slots[4]),    # 200L CSC 14-16
             ]
             for c, l, v, day, s in allocations_data:
                 Allocation.objects.create(
@@ -248,17 +405,18 @@ class Command(BaseCommand):
                     slot=s
                 )
 
-            # 10. Lecturer Availabilities
-            for d in range(5):
+            # 10. Lecturer Availabilities across Monday - Saturday (range 6)
+            for d in range(6):
                 for s_idx in range(1, 6):
                     # Default available except Friday prayer (slot 3)
                     is_avail = not (d == 4 and s_idx == 3)
-                    LecturerAvailability.objects.get_or_create(
-                        lecturer=l_aminu,
-                        day_of_week=d,
-                        slot=slots[s_idx],
-                        defaults={'is_available': is_avail}
-                    )
+                    for lec in [l_aminu, l_kabiru, l_bello, l_fatima, l_usman]:
+                        LecturerAvailability.objects.get_or_create(
+                            lecturer=lec,
+                            day_of_week=d,
+                            slot=slots[s_idx],
+                            defaults={'is_available': is_avail}
+                        )
 
             # 11. Optimization Setting
             OptimizationSetting.objects.get_or_create(

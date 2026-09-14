@@ -460,7 +460,8 @@ class FudSlotPreCommitValidationEngineTests(FudBaseTestCase):
         self.assertIn("STUDENT COHORT CLASH", reason)
 
     def test_validation_api_endpoint_valid(self):
-        """API endpoint returns valid=True for conflict-free slot."""
+        """API endpoint returns valid=True for conflict-free slot when called by authorized Faculty Admin."""
+        self.client.force_login(self.user_faculty_admin)
         resp = self.client.get('/api/validate-slot/', {
             'day': 'Tuesday',
             'time_slot': '08:00 - 10:00',
@@ -475,6 +476,7 @@ class FudSlotPreCommitValidationEngineTests(FudBaseTestCase):
 
     def test_validation_api_endpoint_friday_lockout(self):
         """API endpoint returns valid=False and SENATE_BLACKOUT for Friday prayer slot."""
+        self.client.force_login(self.user_faculty_admin)
         resp = self.client.get('/api/validate-slot/', {
             'day': 'Friday',
             'time_slot': '12:00 - 14:00',
@@ -899,5 +901,226 @@ class FudZeroCompromiseSecurityTests(FudBaseTestCase):
         )
         result = scheduler.solve()
         self.assertTrue(result.timed_out)
+
+
+class FudRemediationAndHardeningTests(FudBaseTestCase):
+    """
+    Validates the 4 critical remediations:
+    1. Removal of client-side role switching and sensitive credentials
+    2. Full 6-day academic schedule (Monday to Saturday)
+    3. Dynamic level filtering (100L - 500L)
+    4. Read-only student timetable and UI consistency
+    """
+
+    def test_role_switch_endpoints_removed(self):
+        """Role switch routes must return 404; client-side role toggling is prohibited."""
+        self.client.force_login(self.user_student)
+        resp = self.client.get('/role-switch/CENTRAL_ADMIN/')
+        self.assertEqual(resp.status_code, 404)
+
+        resp2 = self.client.get('/role-switch/FACULTY_ADMIN/')
+        self.assertEqual(resp2.status_code, 404)
+
+    def test_login_page_no_credentials_or_demo_buttons(self):
+        """Login page must not contain plaintext credentials, passwords, or demo switcher buttons."""
+        resp = self.client.get('/login/')
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode('utf-8')
+        self.assertNotIn('FudPass@2025', content)
+        self.assertNotIn('fillCredentials', content)
+        self.assertNotIn('Instant Role Scopes', content)
+        self.assertNotIn('DEMO ACCOUNTS', content)
+
+    def test_topbar_no_role_switcher(self):
+        """Topbar navigation must not render role scope dropdown for any role."""
+        for user in [self.user_admin, self.user_faculty_admin, self.user_lecturer, self.user_student]:
+            self.client.force_login(user)
+            # Fetch an authorized page for each user
+            url = '/central/dashboard/' if user == self.user_admin else (
+                '/faculty/matrix/' if user == self.user_faculty_admin else (
+                    '/lecturer/schedule/' if user == self.user_lecturer else '/student/timetable/'
+                )
+            )
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 200)
+            content = resp.content.decode('utf-8')
+            self.assertNotIn('Switch Role Scope', content)
+            self.assertNotIn('role-switch', content)
+
+    def test_faculty_matrix_level_filtering(self):
+        """Faculty matrix dynamically filters allocations by selected level (100L to 500L or ALL)."""
+        self.client.force_login(self.user_faculty_admin)
+
+        # Create level 100 allocation
+        alloc_101 = Allocation.objects.create(
+            timetable=self.timetable,
+            course=self.course_101,
+            lecturer=self.lecturer_profile,
+            venue=self.venue_twin_a,
+            day_of_week=1,  # Tuesday
+            slot=self.slot_2
+        )
+
+        # Filter for 100L
+        resp_100 = self.client.get('/faculty/matrix/?level=100')
+        self.assertEqual(resp_100.status_code, 200)
+        self.assertEqual(resp_100.context['selected_level'], '100')
+        allocs_100 = resp_100.context['allocations']
+        self.assertTrue(all(a.course.level == 100 for a in allocs_100))
+        self.assertIn(alloc_101, allocs_100)
+        self.assertNotIn(self.alloc_301, allocs_100)
+
+        # Filter for 300L
+        resp_300 = self.client.get('/faculty/matrix/?level=300')
+        self.assertEqual(resp_300.status_code, 200)
+        self.assertEqual(resp_300.context['selected_level'], '300')
+        allocs_300 = resp_300.context['allocations']
+        self.assertTrue(all(a.course.level == 300 for a in allocs_300))
+        self.assertIn(self.alloc_301, allocs_300)
+        self.assertNotIn(alloc_101, allocs_300)
+
+        # Filter for ALL
+        resp_all = self.client.get('/faculty/matrix/?level=ALL')
+        self.assertEqual(resp_all.status_code, 200)
+        self.assertEqual(resp_all.context['selected_level'], 'ALL')
+        allocs_all = resp_all.context['allocations']
+        self.assertIn(self.alloc_301, allocs_all)
+        self.assertIn(alloc_101, allocs_all)
+
+    def test_six_day_schedule_grid_rows(self):
+        """Matrix and student views must contain all 6 days (Monday=0 to Saturday=5)."""
+        self.client.force_login(self.user_faculty_admin)
+        resp = self.client.get('/faculty/matrix/')
+        self.assertEqual(resp.status_code, 200)
+        grid_rows = resp.context['grid_rows']
+        self.assertEqual(len(grid_rows), 6)
+        day_names = [r['day_name'] for r in grid_rows]
+        self.assertEqual(day_names, ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+
+        # Create a Saturday allocation and verify it renders in row 5
+        sat_alloc = Allocation.objects.create(
+            timetable=self.timetable,
+            course=self.course_301,
+            lecturer=self.lecturer_profile,
+            venue=self.venue_twin_a,
+            day_of_week=5,  # Saturday
+            slot=self.slot_1
+        )
+        resp_sat = self.client.get('/faculty/matrix/?level=300')
+        sat_row = resp_sat.context['grid_rows'][5]
+        self.assertEqual(sat_row['day_name'], 'Saturday')
+        sat_slot_allocs = sat_row['cells'][0]['allocations']
+        self.assertIn(sat_alloc, sat_slot_allocs)
+
+    def test_student_timetable_level_filtering_and_read_only(self):
+        """Student timetable defaults to student level, supports filter, and is strictly read-only."""
+        self.client.force_login(self.user_student)
+        resp = self.client.get('/student/timetable/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['selected_level'], 300)
+        content = resp.content.decode('utf-8')
+        # Strictly read-only checks: no override controls
+        self.assertNotIn('Manual Override Slot', content)
+        self.assertNotIn('openOverrideModal', content)
+        self.assertNotIn('overrideModal', content)
+        self.assertNotIn('Commit Slot Override', content)
+
+        # Dynamic level filter on student timetable
+        resp_100 = self.client.get('/student/timetable/?level=100')
+        self.assertEqual(resp_100.status_code, 200)
+        self.assertEqual(resp_100.context['selected_level'], 100)
+
+    def test_printable_export_dynamic_level_and_saturday(self):
+        """Student printable export dynamically renders chosen level and includes Saturday."""
+        self.client.force_login(self.user_student)
+        resp = self.client.get('/student/export/?level=400')
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode('utf-8')
+        self.assertIn('400 Level', content)
+        self.assertIn('SATURDAY', content)
+
+    def test_faculty_inbox_bola_rejection(self):
+        """Faculty Admin cannot approve or reject tickets from another faculty (BOLA/IDOR mitigation)."""
+        # Create ticket for Faculty of Science
+        sci_tt = Timetable.objects.create(faculty=self.faculty_sci, session=self.session, semester=1)
+        sci_dept = Department.objects.create(code='CHM2', name='Chemistry Dept', faculty=self.faculty_sci)
+        sci_course = Course.objects.create(code='CHM 201', title='Organic Chem', department=sci_dept, credit_units=3, level=200, expected_capacity=40)
+        sci_alloc = Allocation.objects.create(timetable=sci_tt, course=sci_course, lecturer=self.lecturer_profile, venue=self.venue_lt_ag, slot=self.slot_1, day_of_week=0)
+        foreign_ticket = ChangeRequest.objects.create(
+            lecturer=self.lecturer_profile,
+            allocation=sci_alloc,
+            reason="Attempt cross-tenant approval"
+        )
+
+        # Faculty Admin for Computing attempts to approve foreign ticket
+        self.client.force_login(self.user_faculty_admin)
+        resp_approve = self.client.post('/faculty/inbox/approve/', {'action_target_id': str(foreign_ticket.id)})
+        self.assertEqual(resp_approve.status_code, 404)
+
+        resp_reject = self.client.post('/faculty/inbox/reject/', {'action_target_id': str(foreign_ticket.id)})
+        self.assertEqual(resp_reject.status_code, 404)
+
+    def test_api_validate_slot_role_gating_and_tenancy(self):
+        """api_validate_slot requires admin role and enforces faculty tenancy."""
+        # Unauthenticated request redirects to login
+        resp_anon = self.client.get('/api/validate-slot/')
+        self.assertEqual(resp_anon.status_code, 302)
+
+        # Student request returns 403
+        self.client.force_login(self.user_student)
+        resp_student = self.client.get('/api/validate-slot/')
+        self.assertEqual(resp_student.status_code, 403)
+
+        # Faculty admin on cross-faculty course returns 403
+        self.client.force_login(self.user_faculty_admin)
+        sci_dept = Department.objects.create(code='PHY', name='Physics', faculty=self.faculty_sci)
+        sci_course = Course.objects.create(code='PHY 101', title='Physics I', department=sci_dept, credit_units=3, level=100, expected_capacity=50)
+        resp_foreign = self.client.get(f'/api/validate-slot/?course={sci_course.code}&venue={self.venue_lt_ag.code}&day=Monday&time_slot=08:00 - 10:00')
+        self.assertEqual(resp_foreign.status_code, 403)
+
+        # Faculty admin on own faculty course returns 200 JSON
+        resp_valid = self.client.get(f'/api/validate-slot/?course={self.course_301.code}&venue={self.venue_twin_a.code}&day=Tuesday&time_slot=10:00 - 12:00')
+        self.assertEqual(resp_valid.status_code, 200)
+        data = resp_valid.json()
+        self.assertIn('valid', data)
+        self.assertIn('checks', data)
+
+    def test_database_unique_constraints_enforced(self):
+        """Database enforces unique constraints preventing double booking at persistence layer."""
+        from django.db import IntegrityError
+        # 1. Venue double-booking on same timetable, day, slot
+        with self.assertRaises(IntegrityError):
+            Allocation.objects.create(
+                timetable=self.timetable,
+                course=self.course_305,
+                lecturer=self.lecturer_profile,
+                venue=self.venue_lt_ag,  # same as alloc_301
+                day_of_week=0,           # Monday
+                slot=self.slot_1         # Slot 1
+            )
+
+    def test_central_optimization_reset_requires_post(self):
+        """Resetting optimization weights must require POST with CSRF and reject GET with 405."""
+        self.client.force_login(self.user_admin)
+        resp_get = self.client.get('/central/optimization/reset/')
+        self.assertEqual(resp_get.status_code, 405)
+
+        resp_post = self.client.post('/central/optimization/reset/')
+        self.assertEqual(resp_post.status_code, 302)
+
+    def test_lecturer_schedule_dynamic_6_day_grid(self):
+        """Lecturer schedule view provides 6-day grid rows and dynamic load statistics."""
+        self.client.force_login(self.user_lecturer)
+        resp = self.client.get('/lecturer/schedule/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['grid_rows']), 6)
+        self.assertGreaterEqual(resp.context['total_contact_hours'], 3)
+        self.assertGreaterEqual(resp.context['assigned_courses_count'], 1)
+        content = resp.content.decode('utf-8')
+        self.assertIn('CSC 301', content)
+        self.assertIn('Monday', content)
+        self.assertIn('Saturday', content)
+
+
 
 

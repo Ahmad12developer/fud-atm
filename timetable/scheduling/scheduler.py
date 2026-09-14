@@ -108,7 +108,7 @@ class BoundedScheduler:
 
         # 4. Canonical TimeSlots
         slots = list(TimeSlot.objects.all().order_by('index'))
-        days = [0, 1, 2, 3, 4]  # Monday to Friday
+        days = [0, 1, 2, 3, 4, 5]  # Monday to Saturday (0 to 5)
 
         # Precompute Course -> Lecturer assignment
         course_lecturers = {}

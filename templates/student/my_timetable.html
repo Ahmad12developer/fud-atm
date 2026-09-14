@@ -43,41 +43,42 @@
     <div>
       <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Academic Department</label>
       <select name="department" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:ring-1 focus:ring-[#1B4D3E]">
-        <option value="CSC" selected>Computer Science</option>
-        <option value="SE">Software Engineering</option>
-        <option value="CYB">Cybersecurity</option>
-        <option value="IT">Information Technology</option>
+        <option value="CSC" {% if department.code == 'CSC' %}selected{% endif %}>Computer Science</option>
+        <option value="SE" {% if department.code == 'SE' %}selected{% endif %}>Software Engineering</option>
+        <option value="CYB" {% if department.code == 'CYB' %}selected{% endif %}>Cybersecurity</option>
+        <option value="IT" {% if department.code == 'IT' %}selected{% endif %}>Information Technology</option>
       </select>
     </div>
 
     <div>
       <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Level Cohort</label>
       <select name="level" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:ring-1 focus:ring-[#1B4D3E]">
-        <option value="100">100 Level</option>
-        <option value="200">200 Level</option>
-        <option value="300" selected>300 Level</option>
-        <option value="400">400 Level</option>
+        <option value="100" {% if level == 100 %}selected{% endif %}>100 Level</option>
+        <option value="200" {% if level == 200 %}selected{% endif %}>200 Level</option>
+        <option value="300" {% if level == 300 %}selected{% endif %}>300 Level</option>
+        <option value="400" {% if level == 400 %}selected{% endif %}>400 Level</option>
+        <option value="500" {% if level == 500 %}selected{% endif %}>500 Level</option>
       </select>
     </div>
 
     <div>
       <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Academic Semester</label>
       <select name="semester" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:ring-1 focus:ring-[#1B4D3E]">
-        <option value="1" selected>Harmattan Semester</option>
-        <option value="2">Rain Semester</option>
+        <option value="1" selected>Harmattan (1st) Semester</option>
+        <option value="2">Rain (2nd) Semester</option>
       </select>
     </div>
 
     <div class="pt-4">
-      <button type="submit" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition">
-        Filter
+      <button type="submit" class="px-4 py-1.5 bg-[#1B4D3E] hover:bg-[#13392E] text-white font-bold rounded-lg shadow-sm transition">
+        Filter Schedule
       </button>
     </div>
   </form>
 
   <div class="text-right">
     <span class="text-[11px] font-bold uppercase text-slate-400 block">Enrolled Total Units</span>
-    <span class="text-sm font-black text-[#1B4D3E]">21 Credit Units</span>
+    <span class="text-sm font-black text-[#1B4D3E]">{{ total_credits|default:"0" }} Credit Units</span>
   </div>
 </div>
 
@@ -88,161 +89,53 @@
       <thead>
         <tr class="bg-[#F8F9FA] text-slate-700 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
           <th class="p-3 border-r border-[#E2E8F0] text-center w-28 bg-[#1B4D3E] text-white">Day</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">08:00 - 10:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">10:00 - 12:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">12:00 - 14:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">14:00 - 16:00</th>
-          <th class="p-3 text-center w-36">16:00 - 18:00</th>
+          {% for slot in slots %}
+          <th class="p-3 border-r border-[#E2E8F0] text-center min-w-[160px]">{{ slot.label }}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody class="divide-y divide-[#E2E8F0] text-slate-800">
-        
-        <!-- Monday -->
+        {% for row in grid_rows %}
         <tr class="h-28">
           <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Monday
+            {{ row.day_name }}
           </td>
-          <!-- CSC 301 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
-            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-[#1B4D3E] text-sm">CSC 301</span>
-                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
+          {% for cell in row.cells %}
+            {% if cell.is_friday_prayer %}
+              <td class="p-2 border-r border-[#E2E8F0] bg-amber-100/60 align-middle text-center">
+                <div class="p-2 rounded-lg border border-dashed border-amber-400 text-amber-900 font-bold text-xs">
+                  <span class="block text-[10px] uppercase tracking-wider text-amber-800">Senate Blackout</span>
+                  Friday Juma'at Prayer (12:30 PM - 2:00 PM)
                 </div>
-                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Systems Analysis</div>
-              </div>
-              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
-                <span class="font-mono font-bold text-slate-800">LT-AG</span>
-                <span>Dr. Aminu</span>
-              </div>
-            </div>
-          </td>
-          <!-- CSC 305 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
-            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-[#1B4D3E] text-sm">CSC 305</span>
-                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
+              </td>
+            {% elif cell.allocations %}
+              <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
+                <div class="space-y-2 h-full">
+                  {% for a in cell.allocations %}
+                    <div class="h-full p-2.5 rounded-lg bg-white border {% if a.course.code|slice:':2' == 'SE' %}border-[#5C4033]/40{% elif a.course.code|slice:':3' == 'CYB' %}border-sky-400{% else %}border-emerald-300{% endif %} shadow-sm flex flex-col justify-between">
+                      <div>
+                        <div class="flex items-center justify-between">
+                          <span class="font-black {% if a.course.code|slice:':2' == 'SE' %}text-[#5C4033]{% elif a.course.code|slice:':3' == 'CYB' %}text-sky-900{% else %}text-[#1B4D3E]{% endif %} text-sm">{{ a.course.code }}</span>
+                          <span class="px-1.5 py-0.2 {% if a.course.code|slice:':2' == 'SE' %}bg-[#5C4033]/15 text-[#5C4033]{% elif a.course.code|slice:':3' == 'CYB' %}bg-sky-100 text-sky-900{% else %}bg-emerald-100 text-emerald-800{% endif %} rounded text-[9px] font-bold">{{ a.course.credit_units }} CU</span>
+                        </div>
+                        <div class="font-semibold text-slate-800 text-[11px] mt-0.5">{{ a.course.title }}</div>
+                      </div>
+                      <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between mt-1">
+                        <span class="font-mono font-bold text-slate-800">{{ a.venue.code }}</span>
+                        <span>{{ a.lecturer.user.last_name|default:a.lecturer.staff_id }}</span>
+                      </div>
+                    </div>
+                  {% endfor %}
                 </div>
-                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Database Systems</div>
-              </div>
-              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
-                <span class="font-mono font-bold text-slate-800">TWIN-A</span>
-                <span>Mal. Haruna</span>
-              </div>
-            </div>
-          </td>
-          <!-- Break -->
-          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-bold">
-            Midday Break
-          </td>
-          <!-- CSC 311 Lab -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-[#5C4033]/5">
-            <div class="h-full p-2.5 rounded-lg bg-white border border-[#5C4033]/40 shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-[#5C4033] text-sm">CSC 311</span>
-                  <span class="px-1.5 py-0.2 bg-[#5C4033]/15 text-[#5C4033] rounded text-[9px] font-bold">LAB (2 CU)</span>
-                </div>
-                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Operating Systems Lab</div>
-              </div>
-              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
-                <span class="font-mono font-bold text-[#5C4033]">LAB-PTDF</span>
-                <span>Dr. Garba</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
+              </td>
+            {% else %}
+              <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] align-middle text-center text-slate-400 font-medium">
+                Free
+              </td>
+            {% endif %}
+          {% endfor %}
         </tr>
-
-        <!-- Tuesday -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Tuesday
-          </td>
-          <!-- SE 301 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
-            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-[#1B4D3E] text-sm">SE 301</span>
-                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
-                </div>
-                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Software Architecture</div>
-              </div>
-              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
-                <span class="font-mono font-bold text-slate-800">TWIN-B</span>
-                <span>Dr. Fatima</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Free Window
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Break
-          </td>
-          <!-- CSC 307 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-amber-50/40">
-            <div class="h-full p-2.5 rounded-lg bg-white border border-amber-300 shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-[#D97706] text-sm">CSC 307</span>
-                  <span class="px-1.5 py-0.2 bg-amber-100 text-amber-900 rounded text-[9px] font-bold">3 CU</span>
-                </div>
-                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Algorithms & Complexity</div>
-              </div>
-              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
-                <span class="font-mono font-bold text-slate-800">TWIN-A</span>
-                <span>Dr. Aminu</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-        </tr>
-
-        <!-- Friday -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase text-xs">
-            Friday
-          </td>
-          <!-- CSC 309 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-top bg-emerald-50/40">
-            <div class="h-full p-2.5 rounded-lg bg-white border border-emerald-300 shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-black text-[#1B4D3E] text-sm">CSC 309</span>
-                  <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[9px] font-bold">3 CU</span>
-                </div>
-                <div class="font-semibold text-slate-800 text-[11px] mt-0.5">Artificial Intelligence</div>
-              </div>
-              <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between">
-                <span class="font-mono font-bold text-slate-800">TWIN-B</span>
-                <span>Prof. B. Dutse</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Self Study
-          </td>
-          <!-- Protected Juma'at -->
-          <td class="p-2 border-r border-[#E2E8F0] bg-amber-100/60 flex items-center justify-center text-amber-900 font-bold text-center">
-            Friday Juma'at Congregation Prayer Window (12:30 - 14:00)
-          </td>
-          <td class="p-2 border-r border-[#E2E8F0] bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-          <td class="p-2 bg-[#F8F9FA] flex items-center justify-center text-slate-400 font-medium">
-            Free
-          </td>
-        </tr>
-
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -252,7 +145,7 @@
 <div class="hidden md:block bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
   <div class="p-4 bg-[#F8F9FA] border-b border-[#E2E8F0] flex items-center justify-between">
     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">
-      Official Timetable Course Schedule ({{ allocations|length }})
+      Official Timetable Course Schedule ({{ allocations|length }}) &bull; {{ level }} Level
     </h3>
     <span class="text-[11px] font-mono text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Senate Approved</span>
   </div>
@@ -288,56 +181,36 @@
 <!-- Mobile Agenda View (Visible on small screens) -->
 <div class="block md:hidden space-y-4">
   <div class="text-xs font-bold uppercase text-slate-500 tracking-wider">
-    Mobile Agenda Stream
+    Mobile Agenda Stream &bull; {{ level }} Level
   </div>
 
-  <!-- Monday Card -->
+  {% for row in grid_rows %}
   <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-sm space-y-3">
     <div class="font-black text-sm text-[#1B4D3E] pb-2 border-b border-slate-100">
-      MONDAY
+      {{ row.day_name|upper }}
     </div>
-    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-      <div class="flex justify-between items-center">
-        <span class="font-bold text-[#1B4D3E] text-xs">CSC 301 &bull; Systems Analysis</span>
-        <span class="text-[10px] font-mono text-emerald-800 font-bold">08:00 - 10:00</span>
-      </div>
-      <div class="text-[11px] text-slate-600 mt-1">Venue: Abubakar Gimba Theatre &bull; Dr. Aminu</div>
-    </div>
-    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-      <div class="flex justify-between items-center">
-        <span class="font-bold text-[#1B4D3E] text-xs">CSC 305 &bull; Database Systems</span>
-        <span class="text-[10px] font-mono text-emerald-800 font-bold">10:00 - 12:00</span>
-      </div>
-      <div class="text-[11px] text-slate-600 mt-1">Venue: Twin Theatre A &bull; Mal. Haruna</div>
-    </div>
-    <div class="p-3 rounded-lg bg-[#5C4033]/10 border border-[#5C4033]/30">
-      <div class="flex justify-between items-center">
-        <span class="font-bold text-[#5C4033] text-xs">CSC 311 &bull; Operating Systems Lab</span>
-        <span class="text-[10px] font-mono text-[#5C4033] font-bold">14:00 - 16:00</span>
-      </div>
-      <div class="text-[11px] text-slate-600 mt-1">Venue: PTDF Lab &bull; Dr. Garba</div>
-    </div>
+    {% for cell in row.cells %}
+      {% if cell.is_friday_prayer %}
+        <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-bold text-xs text-center">
+          Friday Juma'at Prayer Blackout (12:30 PM - 2:00 PM)
+        </div>
+      {% elif cell.allocations %}
+        {% for a in cell.allocations %}
+          <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+            <div class="flex justify-between items-center">
+              <span class="font-black text-[#1B4D3E]">{{ a.course.code }}</span>
+              <span class="text-xs font-mono font-bold text-emerald-800">{{ cell.slot.label }}</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-800 mt-1">{{ a.course.title }}</div>
+            <div class="text-[11px] text-slate-500 mt-1 flex justify-between">
+              <span>Hall: <strong>{{ a.venue.code }}</strong></span>
+              <span>Lecturer: <strong>{{ a.lecturer.user.get_full_name }}</strong></span>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
   </div>
-
-  <!-- Tuesday Card -->
-  <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-sm space-y-3">
-    <div class="font-black text-sm text-[#1B4D3E] pb-2 border-b border-slate-100">
-      TUESDAY
-    </div>
-    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-      <div class="flex justify-between items-center">
-        <span class="font-bold text-[#1B4D3E] text-xs">SE 301 &bull; Software Architecture</span>
-        <span class="text-[10px] font-mono text-emerald-800 font-bold">08:00 - 10:00</span>
-      </div>
-      <div class="text-[11px] text-slate-600 mt-1">Venue: Twin Theatre B &bull; Dr. Fatima</div>
-    </div>
-    <div class="p-3 rounded-lg bg-amber-50 border border-amber-200">
-      <div class="flex justify-between items-center">
-        <span class="font-bold text-[#D97706] text-xs">CSC 307 &bull; Algorithms & Complexity</span>
-        <span class="text-[10px] font-mono text-amber-900 font-bold">14:00 - 16:00</span>
-      </div>
-      <div class="text-[11px] text-slate-600 mt-1">Venue: Twin Theatre A &bull; Dr. Aminu</div>
-    </div>
-  </div>
+  {% endfor %}
 </div>
 {% endblock %}

@@ -221,6 +221,7 @@ class LecturerAvailability(models.Model):
         (2, 'Wednesday'),
         (3, 'Thursday'),
         (4, 'Friday'),
+        (5, 'Saturday'),
     ]
 
     lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='availabilities')
@@ -285,6 +286,7 @@ class Allocation(models.Model):
         (2, 'Wednesday'),
         (3, 'Thursday'),
         (4, 'Friday'),
+        (5, 'Saturday'),
     ]
 
     timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE, related_name='allocations')
@@ -299,6 +301,20 @@ class Allocation(models.Model):
             models.Index(fields=['timetable', 'day_of_week', 'slot'], name='alloc_tt_day_slot_idx'),
             models.Index(fields=['venue', 'day_of_week', 'slot'], name='alloc_venue_day_slot_idx'),
             models.Index(fields=['lecturer', 'day_of_week', 'slot'], name='alloc_lec_day_slot_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['timetable', 'venue', 'day_of_week', 'slot'],
+                name='unique_timetable_venue_slot'
+            ),
+            models.UniqueConstraint(
+                fields=['timetable', 'lecturer', 'day_of_week', 'slot'],
+                name='unique_timetable_lecturer_slot'
+            ),
+            models.UniqueConstraint(
+                fields=['timetable', 'course', 'day_of_week', 'slot'],
+                name='unique_timetable_course_slot'
+            ),
         ]
         ordering = ['day_of_week', 'slot__index']
 
@@ -318,6 +334,7 @@ class ChangeRequest(models.Model):
         (2, 'Wednesday'),
         (3, 'Thursday'),
         (4, 'Friday'),
+        (5, 'Saturday'),
     ]
 
     lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='change_requests')

@@ -10,7 +10,7 @@
       <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#1B4D3E] text-white rounded">
         Faculty Dispatch
       </span>
-      <span class="text-xs text-slate-500 font-mono">3 Pending Lecturer Requests</span>
+      <span class="text-xs text-slate-500 font-mono">{{ tickets|length }} Pending Lecturer Request{{ tickets|length|pluralize }}</span>
     </div>
     <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">
       Academic Staff Schedule Adjustment Inbox
@@ -22,7 +22,7 @@
 
   <div class="flex items-center space-x-3">
     <span class="px-3 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-300">
-      3 Action Items Required
+      {{ tickets|length }} Action Item{{ tickets|length|pluralize }} Required
     </span>
   </div>
 </div>
@@ -36,81 +36,72 @@
       <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Status Filter</label>
       <select class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-700">
         <option value="ALL">All Tickets</option>
-        <option value="PENDING" selected>Pending Review (3)</option>
-        <option value="APPROVED">Approved (12)</option>
-        <option value="REJECTED">Rejected (2)</option>
-      </select>
-    </div>
-
-    <div>
-      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Issue Classification</label>
-      <select class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-700">
-        <option value="ALL">All Issues</option>
-        <option value="CAPACITY">Venue Capacity Deficit</option>
-        <option value="TIME">Time Slot Collision</option>
-        <option value="EQUIPMENT">Specialized Lab Equipment</option>
-        <option value="PERSONAL">Medical / Senate Exemption</option>
+        <option value="PENDING" selected>Pending Review ({{ tickets|length }})</option>
       </select>
     </div>
   </div>
 
   <div class="text-xs text-slate-500">
-    Showing <strong>3</strong> pending submissions
+    Showing <strong>{{ tickets|length }}</strong> submission{{ tickets|length|pluralize }}
   </div>
 </div>
 
 <!-- Tickets List Stream -->
 <div class="space-y-4">
-
-  <!-- Ticket 1: Pending (Capacity Issue) -->
+  {% for ticket in tickets %}
   <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4 hover:border-slate-300 transition">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
       <div class="flex items-center space-x-3">
-        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-042</span>
-        {% include 'components/audit_badge.html' with badge_type='action' value='PENDING' %}
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-          Venue Capacity Deficit
-        </span>
+        <span class="font-mono text-xs font-bold text-slate-500">REQ-{{ ticket.id }}</span>
+        {% include 'components/audit_badge.html' with badge_type='action' value=ticket.status %}
       </div>
-      <span class="text-[11px] text-slate-400 font-mono">Submitted: Today, 08:30 AM</span>
+      <span class="text-[11px] text-slate-400 font-mono">Submitted: {{ ticket.created_at|date:"M d, Y H:i" }}</span>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
       <div>
         <span class="text-slate-400 uppercase font-bold text-[10px] block">Lecturer</span>
-        <span class="font-bold text-slate-900 block text-sm">Dr. Aminu Sani Dutse</span>
-        <span class="text-slate-500 text-[11px]">Senior Lecturer &bull; Computer Science</span>
+        <span class="font-bold text-slate-900 block text-sm">{{ ticket.lecturer.user.get_full_name|default:ticket.lecturer.user.username }}</span>
+        <span class="text-slate-500 text-[11px]">{{ ticket.lecturer.rank|default:"Academic Staff" }} &bull; {{ ticket.lecturer.department.name }}</span>
       </div>
 
       <div>
         <span class="text-slate-400 uppercase font-bold text-[10px] block">Target Course Unit</span>
-        <span class="font-bold text-[#1B4D3E] block text-sm">CSC 307 (Algorithms)</span>
-        <span class="text-slate-500 text-[11px]">Cohort Enrollment: 215 Students</span>
+        <span class="font-bold text-[#1B4D3E] block text-sm">{{ ticket.allocation.course.code }} ({{ ticket.allocation.course.title }})</span>
+        <span class="text-slate-500 text-[11px]">Cohort Capacity: {{ ticket.allocation.course.expected_capacity }} Students</span>
       </div>
 
       <div>
         <span class="text-slate-400 uppercase font-bold text-[10px] block">Slot Adjustment</span>
         <div class="text-[11px] space-y-0.5">
-          <div><strong class="text-slate-500">Current:</strong> Tuesday 14:00 @ Hall 4 (Cap: 100)</div>
-          <div><strong class="text-[#1B4D3E]">Requested:</strong> Tuesday 14:00 @ TWIN-A (Cap: 200)</div>
+          <div><strong class="text-slate-500">Current:</strong> {{ ticket.allocation.get_day_of_week_display }} {{ ticket.allocation.slot.label }} @ {{ ticket.allocation.venue.name }}</div>
+          <div><strong class="text-[#1B4D3E]">Requested:</strong> {{ ticket.get_requested_day_display|default:ticket.allocation.get_day_of_week_display }} {{ ticket.requested_slot.label|default:ticket.allocation.slot.label }} @ {{ ticket.requested_venue.name|default:ticket.allocation.venue.name }}</div>
         </div>
       </div>
     </div>
 
     <div class="p-3.5 rounded-lg bg-[#F8F9FA] border border-slate-200 text-xs text-slate-700 leading-relaxed">
       <strong class="font-bold text-slate-900 block mb-0.5">Lecturer Justification:</strong>
-      Hall 4 accommodates only 100 students, while 215 students are registered across Computer Science and Software Engineering. Twin Theatre A is vacant at this hour and will safely accommodate the entire student body with proper ventilation.
+      {{ ticket.reason }}
     </div>
 
+    {% if ticket.admin_feedback %}
+    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600">
+      <strong class="font-bold text-slate-800 block mb-0.5">Committee Decision &amp; Feedback:</strong>
+      {{ ticket.admin_feedback }}
+    </div>
+    {% endif %}
+
     <!-- Action Controls -->
+    {% if ticket.status == 'PENDING' %}
     <div class="flex items-center justify-end space-x-3 pt-2">
       <!-- Reject Button with Modal Confirm -->
       <button type="button"
               onclick="showConfirmModal({
-                title: 'Reject Adjustment Request REQ-2025-042',
-                message: 'Provide administrative notification to Dr. Aminu Sani Dutse regarding why this venue adjustment cannot be granted.',
+                title: 'Reject Adjustment Request REQ-{{ ticket.id }}',
+                message: 'Provide administrative notification regarding why this adjustment cannot be granted.',
                 actionUrl: '/faculty/inbox/reject/',
-                targetId: 'REQ-2025-042',
+                targetId: '{{ ticket.id }}',
                 buttonText: 'Confirm Rejection',
                 buttonClass: 'px-4 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow'
               })"
@@ -121,87 +112,30 @@
       <!-- Approve Button with Modal Confirm -->
       <button type="button"
               onclick="showConfirmModal({
-                title: 'Approve & Reassign REQ-2025-042',
-                message: 'Approve reassignment of CSC 307 to Twin Theatre A on Tuesday 14:00? The pre-check confirms Twin Theatre A is 100% free with 0 conflicts.',
+                title: 'Approve & Reassign REQ-{{ ticket.id }}',
+                message: 'Approve reassignment of {{ ticket.allocation.course.code }}? Constraints will be atomically verified before commit.',
                 actionUrl: '/faculty/inbox/approve/',
-                targetId: 'REQ-2025-042',
+                targetId: '{{ ticket.id }}',
                 buttonText: 'Approve & Reschedule Slot',
                 buttonClass: 'px-4 py-2 text-xs font-semibold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow'
               })"
               class="px-4 py-1.5 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition">
-        Approve & Auto-Reschedule
+        Approve &amp; Auto-Reschedule
       </button>
     </div>
+    {% endif %}
   </div>
-
-  <!-- Ticket 2: Pending (Time Conflict) -->
-  <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4 hover:border-slate-300 transition">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E8F0] gap-2">
-      <div class="flex items-center space-x-3">
-        <span class="font-mono text-xs font-bold text-slate-500">REQ-2025-039</span>
-        {% include 'components/audit_badge.html' with badge_type='action' value='PENDING' %}
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
-          Cross-Faculty Overlap
-        </span>
-      </div>
-      <span class="text-[11px] text-slate-400 font-mono">Submitted: Yesterday, 16:10 PM</span>
+  {% empty %}
+  <div class="bg-white p-12 rounded-xl border border-[#E2E8F0] shadow-sm text-center">
+    <div class="w-12 h-12 rounded-full bg-emerald-50 text-[#1B4D3E] mx-auto flex items-center justify-center mb-3">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
     </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-      <div>
-        <span class="text-slate-400 uppercase font-bold text-[10px] block">Lecturer</span>
-        <span class="font-bold text-slate-900 block text-sm">Mal. Kabiru Haruna</span>
-        <span class="text-slate-500 text-[11px]">Lecturer I &bull; Software Engineering</span>
-      </div>
-
-      <div>
-        <span class="text-slate-400 uppercase font-bold text-[10px] block">Target Course Unit</span>
-        <span class="font-bold text-[#1B4D3E] block text-sm">SE 201 (Programming II)</span>
-        <span class="text-slate-500 text-[11px]">Cohort Enrollment: 140 Students</span>
-      </div>
-
-      <div>
-        <span class="text-slate-400 uppercase font-bold text-[10px] block">Slot Adjustment</span>
-        <div class="text-[11px] space-y-0.5">
-          <div><strong class="text-slate-500">Current:</strong> Thursday 10:00 - 12:00</div>
-          <div><strong class="text-[#1B4D3E]">Requested:</strong> Wednesday 08:00 - 10:00</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="p-3.5 rounded-lg bg-[#F8F9FA] border border-slate-200 text-xs text-slate-700 leading-relaxed">
-      <strong class="font-bold text-slate-900 block mb-0.5">Lecturer Justification:</strong>
-      Faculty of Science has an unscheduled MTH 201 tutorial clashing on Thursday mornings for our 200L joint cohort. Moving SE 201 to Wednesday 8:00 AM resolves student attendance clashes completely.
-    </div>
-
-    <div class="flex items-center justify-end space-x-3 pt-2">
-      <button type="button"
-              onclick="showConfirmModal({
-                title: 'Reject Request REQ-2025-039',
-                message: 'Notify Mal. Kabiru Haruna regarding rejection.',
-                actionUrl: '/faculty/inbox/reject/',
-                targetId: 'REQ-2025-039',
-                buttonText: 'Reject Request',
-                buttonClass: 'px-4 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow'
-              })"
-              class="px-3.5 py-1.5 text-xs font-semibold text-[#DC2626] hover:bg-red-50 border border-red-200 rounded-lg transition">
-        Reject with Note
-      </button>
-
-      <button type="button"
-              onclick="showConfirmModal({
-                title: 'Approve & Reassign REQ-2025-039',
-                message: 'Approve moving SE 201 to Wednesday 08:00 AM?',
-                actionUrl: '/faculty/inbox/approve/',
-                targetId: 'REQ-2025-039',
-                buttonText: 'Approve & Reschedule',
-                buttonClass: 'px-4 py-2 text-xs font-semibold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow'
-              })"
-              class="px-4 py-1.5 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow transition">
-        Approve & Auto-Reschedule
-      </button>
-    </div>
+    <h3 class="text-sm font-bold text-slate-800">Inbox Clean &bull; Zero Pending Tickets</h3>
+    <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+      No schedule adjustment tickets are currently awaiting review in {{ faculty.name }}.
+    </p>
   </div>
+  {% endfor %}
 
 </div>
 {% endblock %}

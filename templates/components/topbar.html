@@ -42,33 +42,8 @@
       <!-- Right: User Profile, Role Badge & Logout Form -->
       <div class="flex items-center space-x-4">
         
-        <!-- Role Switcher for Interactive Demo / Evaluation -->
-        <div class="relative group">
-          <button type="button" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium text-emerald-200 hover:text-white bg-[#13392E] hover:bg-[#246552] px-2.5 py-1.5 rounded border border-emerald-700 transition">
-            <span>Switch Role Scope</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-          </button>
-          <div class="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-xl py-1 text-slate-900 hidden group-hover:block border border-slate-200 z-50">
-            <div class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-              Deterministic Role Scope
-            </div>
-            <a href="/role-switch/CENTRAL_ADMIN/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
-              Central Admin (FUD/ADM/...)
-            </a>
-            <a href="/role-switch/FACULTY_ADMIN/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
-              Faculty Admin (FUD/SCI/...)
-            </a>
-            <a href="/role-switch/LECTURER/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
-              Lecturer (FUD/LEC/...)
-            </a>
-            <a href="/role-switch/STUDENT/" class="block px-3 py-2 text-xs hover:bg-emerald-50 text-slate-800 hover:text-[#1B4D3E] font-medium">
-              Student (FUD/CST/...)
-            </a>
-          </div>
-        </div>
-
         <!-- Identity & Role Indicator -->
-        <div class="flex items-center space-x-3 border-l border-emerald-700/60 pl-4">
+        <div class="flex items-center space-x-3">
           <div class="text-right hidden sm:block">
             <div class="text-xs font-semibold text-white tracking-wide">
               {{ user.name|default:"FUD Member" }}

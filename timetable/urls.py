@@ -9,7 +9,6 @@ urlpatterns = [
     path('', views.root_dispatch, name='root_dispatch'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('role-switch/<str:role>/', views.role_switch_view, name='role_switch'),
 
     # Central Admin Operations
     path('central/dashboard/', views.central_dashboard, name='central_dashboard'),

@@ -76,33 +76,6 @@ def logout_view(request):
     return redirect('/login/')
 
 
-def role_switch_view(request, role):
-    """Convenience endpoint to switch authenticated role scope during evaluation."""
-    role_map = {
-        'CENTRAL_ADMIN': 'FUD/ADM/2024/001',
-        'FACULTY_ADMIN': 'FUD/SCI/2024/014',
-        'LECTURER': 'FUD/LEC/2024/088',
-        'STUDENT': 'FUD/CST/21/0456',
-    }
-    target_id = role_map.get(role)
-    if target_id:
-        try:
-            target_user = User.objects.get(institutional_id=target_id)
-            login(request, target_user)
-            log_audit(
-                action="ROLE_SWITCH_DEMO",
-                entity_type="USER",
-                entity_id=target_id,
-                user=target_user,
-                request=request,
-                details={'switched_to_role': role}
-            )
-            messages.success(request, f"Authenticated as {target_user.get_full_name()} [{role}].")
-        except User.DoesNotExist:
-            messages.error(request, f"User with ID {target_id} not found.")
-    return redirect('/')
-
-
 def root_dispatch(request):
     """Dispatches root / to the role-specific dashboard based on authenticated user."""
     if not request.user.is_authenticated:
@@ -173,6 +146,7 @@ def central_optimization_tuner(request):
     return render(request, 'central_admin/optimization_tuner.html', {'setting': setting})
 
 
+@require_POST
 @role_required([User.Role.CENTRAL_ADMIN])
 def central_optimization_reset(request):
     setting, _ = OptimizationSetting.objects.get_or_create(id=1)
@@ -422,6 +396,7 @@ def faculty_generate_submit(request):
 @role_required([User.Role.FACULTY_ADMIN])
 @faculty_scoped_required
 def faculty_timetable_matrix(request):
+    from datetime import time
     faculty = request.user.faculty
     session = AcademicSession.objects.filter(is_current=True).first()
 
@@ -431,16 +406,50 @@ def faculty_timetable_matrix(request):
         semester=1
     ).first()
 
+    selected_level = request.GET.get('level', '300')
+
     allocations = []
     if timetable:
-        allocations = list(Allocation.objects.filter(
+        qs = Allocation.objects.filter(
             timetable=timetable
-        ).select_related('course', 'lecturer__user', 'venue', 'slot'))
+        ).select_related('course', 'lecturer__user', 'venue', 'slot')
+        if selected_level and selected_level != 'ALL':
+            try:
+                qs = qs.filter(course__level=int(selected_level))
+            except ValueError:
+                pass
+        allocations = list(qs)
 
-    slots = TimeSlot.objects.all().order_by('index')
+    slots = list(TimeSlot.objects.all().order_by('index'))
     courses = Course.objects.filter(department__faculty=faculty)
     venues = Venue.objects.filter(faculty=faculty) | Venue.objects.filter(faculty__isnull=True)
     lecturers = Lecturer.objects.filter(department__faculty=faculty).select_related('user')
+
+    # Build 6-day structured matrix (Monday=0 through Saturday=5)
+    DAYS = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+    ]
+    grid_rows = []
+    for day_code, day_name in DAYS:
+        cells = []
+        for slot in slots:
+            slot_allocs = [a for a in allocations if a.day_of_week == day_code and a.slot_id == slot.id]
+            is_prayer = (day_code == 4 and slot.start_time < time(14, 0) and slot.end_time > time(12, 30))
+            cells.append({
+                'slot': slot,
+                'allocations': slot_allocs,
+                'is_friday_prayer': is_prayer,
+            })
+        grid_rows.append({
+            'day_code': day_code,
+            'day_name': day_name,
+            'cells': cells,
+        })
 
     return render(request, 'faculty_admin/timetable_matrix.html', {
         'timetable': timetable,
@@ -450,6 +459,9 @@ def faculty_timetable_matrix(request):
         'venues': venues,
         'lecturers': lecturers,
         'faculty': faculty,
+        'selected_level': selected_level,
+        'level_choices': [100, 200, 300, 400, 500],
+        'grid_rows': grid_rows,
     })
 
 
@@ -653,22 +665,36 @@ def faculty_request_inbox(request):
 @faculty_scoped_required
 def faculty_inbox_approve(request):
     target_id = request.POST.get('action_target_id')
-    ticket = get_object_or_404(ChangeRequest, id=int(target_id)) if target_id and target_id.isdigit() else ChangeRequest.objects.first()
+    if not target_id or not str(target_id).isdigit():
+        messages.error(request, "Invalid or missing change request ticket ID.")
+        return redirect('/faculty/inbox/')
 
-    if ticket:
-        ticket.status = ChangeRequest.Status.APPROVED
-        ticket.admin_feedback = "Approved and rescheduled by Faculty Timetable Committee."
-        ticket.save()
+    ticket = get_object_or_404(
+        ChangeRequest,
+        id=int(target_id),
+        allocation__timetable__faculty=request.user.faculty
+    )
 
-        # Update actual allocation
-        alloc = ticket.allocation
-        if ticket.requested_venue:
-            alloc.venue = ticket.requested_venue
-        if ticket.requested_slot:
-            alloc.slot = ticket.requested_slot
-        if ticket.requested_day is not None:
-            alloc.day_of_week = ticket.requested_day
-        alloc.save()
+    try:
+        with transaction.atomic():
+            ticket.status = ChangeRequest.Status.APPROVED
+            ticket.admin_feedback = request.POST.get('admin_feedback', '').strip() or "Approved and rescheduled by Faculty Timetable Committee."
+            ticket.save(update_fields=['status', 'admin_feedback'])
+
+            alloc = ticket.allocation
+            new_venue_id = ticket.requested_venue_id or alloc.venue_id
+            new_slot_id = ticket.requested_slot_id or alloc.slot_id
+            new_day = ticket.requested_day if ticket.requested_day is not None else alloc.day_of_week
+
+            commit_slot_override(
+                request=request,
+                timetable_id=alloc.timetable_id,
+                allocation_id=alloc.id,
+                new_venue_id=new_venue_id,
+                new_slot_id=new_slot_id,
+                new_day_of_week=new_day,
+                justification=f"Approved adjustment ticket REQ-{ticket.id}: {ticket.reason}"
+            )
 
         log_audit(
             action="CHANGE_REQUEST_APPROVED",
@@ -678,7 +704,9 @@ def faculty_inbox_approve(request):
             request=request,
             details={'course': alloc.course.code, 'lecturer': ticket.lecturer.staff_id}
         )
-        messages.success(request, f"Ticket REQ-{ticket.id} approved and course rescheduled.")
+        messages.success(request, f"Ticket REQ-{ticket.id} approved and course rescheduled successfully.")
+    except (ValidationError, PermissionDenied) as e:
+        messages.error(request, f"Cannot approve REQ-{ticket.id}: {str(e)}")
 
     return redirect('/faculty/inbox/')
 
@@ -688,22 +716,29 @@ def faculty_inbox_approve(request):
 @faculty_scoped_required
 def faculty_inbox_reject(request):
     target_id = request.POST.get('action_target_id')
-    ticket = get_object_or_404(ChangeRequest, id=int(target_id)) if target_id and target_id.isdigit() else ChangeRequest.objects.first()
+    if not target_id or not str(target_id).isdigit():
+        messages.error(request, "Invalid or missing change request ticket ID.")
+        return redirect('/faculty/inbox/')
 
-    if ticket:
-        ticket.status = ChangeRequest.Status.REJECTED
-        ticket.admin_feedback = request.POST.get('admin_feedback') or "Rejected due to capacity or scheduling policy."
-        ticket.save()
+    ticket = get_object_or_404(
+        ChangeRequest,
+        id=int(target_id),
+        allocation__timetable__faculty=request.user.faculty
+    )
 
-        log_audit(
-            action="CHANGE_REQUEST_REJECTED",
-            entity_type="CHANGE_REQUEST",
-            entity_id=str(ticket.id),
-            user=request.user,
-            request=request,
-            details={'reason': ticket.admin_feedback}
-        )
-        messages.warning(request, f"Ticket REQ-{ticket.id} rejected. Notification sent to lecturer.")
+    ticket.status = ChangeRequest.Status.REJECTED
+    ticket.admin_feedback = request.POST.get('admin_feedback', '').strip() or "Rejected due to capacity or scheduling policy."
+    ticket.save(update_fields=['status', 'admin_feedback'])
+
+    log_audit(
+        action="CHANGE_REQUEST_REJECTED",
+        entity_type="CHANGE_REQUEST",
+        entity_id=str(ticket.id),
+        user=request.user,
+        request=request,
+        details={'reason': ticket.admin_feedback}
+    )
+    messages.warning(request, f"Ticket REQ-{ticket.id} rejected. Notification sent to lecturer.")
 
     return redirect('/faculty/inbox/')
 
@@ -714,16 +749,66 @@ def faculty_inbox_reject(request):
 
 @role_required([User.Role.LECTURER])
 def lecturer_schedule(request):
+    from datetime import time
     lecturer = getattr(request.user, 'lecturer_profile', None)
     allocations = []
+    slots = list(TimeSlot.objects.all().order_by('index'))
+    DAYS = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+    ]
+    grid_rows = []
+    assigned_courses = set()
+    designated_venues = set()
+    total_contact_hours = 0
+
     if lecturer:
-        allocations = Allocation.objects.filter(
-            lecturer=lecturer
-        ).select_related('course', 'venue', 'slot', 'timetable')
+        allocations = list(Allocation.objects.filter(
+            lecturer=lecturer,
+            timetable__session__is_current=True,
+            timetable__semester=1
+        ).select_related('course', 'venue', 'slot', 'timetable'))
+
+        if not allocations:
+            allocations = list(Allocation.objects.filter(
+                lecturer=lecturer
+            ).select_related('course', 'venue', 'slot', 'timetable'))
+
+        for a in allocations:
+            assigned_courses.add(a.course.code)
+            designated_venues.add(a.venue.code)
+            total_contact_hours += a.course.credit_units
+
+    for day_code, day_name in DAYS:
+        cells = []
+        for slot in slots:
+            slot_allocs = [a for a in allocations if a.day_of_week == day_code and a.slot_id == slot.id]
+            is_prayer = (day_code == 4 and slot.start_time < time(14, 0) and slot.end_time > time(12, 30))
+            cells.append({
+                'slot': slot,
+                'allocations': slot_allocs,
+                'is_friday_prayer': is_prayer,
+            })
+        grid_rows.append({
+            'day_code': day_code,
+            'day_name': day_name,
+            'cells': cells,
+        })
 
     return render(request, 'lecturer/my_schedule.html', {
         'allocations': allocations,
+        'slots': slots,
+        'grid_rows': grid_rows,
         'lecturer': lecturer,
+        'total_contact_hours': total_contact_hours,
+        'assigned_courses_count': len(assigned_courses),
+        'assigned_courses_list': sorted(assigned_courses),
+        'designated_venues_count': len(designated_venues),
+        'designated_venues_list': sorted(designated_venues),
     })
 
 
@@ -737,8 +822,8 @@ def lecturer_availability(request):
     slots = TimeSlot.objects.all().order_by('index')
 
     if request.method == 'POST':
-        # Process slot submissions
-        for day in range(5):
+        # Process slot submissions across Monday-Saturday (range 6)
+        for day in range(6):
             for s in slots:
                 field_name = f"slot_{day}_{s.id}"
                 status_val = request.POST.get(field_name, 'AVAILABLE')
@@ -836,41 +921,129 @@ def lecturer_my_tickets(request):
 
 @role_required([User.Role.STUDENT])
 def student_timetable(request):
+    from datetime import time
     user = request.user
-    dept = user.department
-    level = user.level or 300
+    
+    # Dynamic level filter: defaults to user's assigned level, or query param
+    level_param = request.GET.get('level')
+    if level_param:
+        try:
+            level = int(level_param)
+        except ValueError:
+            level = user.level or 300
+    else:
+        level = user.level or 300
 
-    allocations = Allocation.objects.filter(
+    dept_code = request.GET.get('department')
+    if dept_code:
+        dept = Department.objects.filter(code=dept_code).first() or user.department
+    else:
+        dept = user.department
+
+    allocations = list(Allocation.objects.filter(
         course__department=dept,
         course__level=level,
         timetable__session__is_current=True,
         timetable__semester=1
-    ).select_related('course', 'lecturer__user', 'venue', 'slot').order_by('day_of_week', 'slot__index')
+    ).select_related('course', 'lecturer__user', 'venue', 'slot').order_by('day_of_week', 'slot__index'))
 
-    slots = TimeSlot.objects.all().order_by('index')
+    slots = list(TimeSlot.objects.all().order_by('index'))
+
+    # Build 6-day structured matrix (Monday=0 to Saturday=5)
+    DAYS = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+    ]
+    grid_rows = []
+    for day_code, day_name in DAYS:
+        cells = []
+        for slot in slots:
+            slot_allocs = [a for a in allocations if a.day_of_week == day_code and a.slot_id == slot.id]
+            is_prayer = (day_code == 4 and slot.start_time < time(14, 0) and slot.end_time > time(12, 30))
+            cells.append({
+                'slot': slot,
+                'allocations': slot_allocs,
+                'is_friday_prayer': is_prayer,
+            })
+        grid_rows.append({
+            'day_code': day_code,
+            'day_name': day_name,
+            'cells': cells,
+        })
+
+    total_credits = sum(a.course.credit_units for a in allocations)
 
     return render(request, 'student/my_timetable.html', {
         'allocations': allocations,
         'slots': slots,
         'department': dept,
         'level': level,
+        'selected_level': level,
+        'level_choices': [100, 200, 300, 400, 500],
+        'grid_rows': grid_rows,
+        'total_credits': total_credits,
+        'read_only': True,
     })
 
 
 @role_required([User.Role.STUDENT])
 def student_printable_export(request):
+    from datetime import time
     user = request.user
-    allocations = Allocation.objects.filter(
+    level_param = request.GET.get('level')
+    if level_param:
+        try:
+            level = int(level_param)
+        except ValueError:
+            level = user.level or 300
+    else:
+        level = user.level or 300
+
+    allocations = list(Allocation.objects.filter(
         course__department=user.department,
-        course__level=user.level or 300,
+        course__level=level,
         timetable__session__is_current=True,
         timetable__semester=1
-    ).select_related('course', 'lecturer__user', 'venue', 'slot').order_by('day_of_week', 'slot__index')
+    ).select_related('course', 'lecturer__user', 'venue', 'slot').order_by('day_of_week', 'slot__index'))
+
+    slots = list(TimeSlot.objects.all().order_by('index'))
+
+    DAYS = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+    ]
+    grid_rows = []
+    for day_code, day_name in DAYS:
+        cells = []
+        for slot in slots:
+            slot_allocs = [a for a in allocations if a.day_of_week == day_code and a.slot_id == slot.id]
+            is_prayer = (day_code == 4 and slot.start_time < time(14, 0) and slot.end_time > time(12, 30))
+            cells.append({
+                'slot': slot,
+                'allocations': slot_allocs,
+                'is_friday_prayer': is_prayer,
+            })
+        grid_rows.append({
+            'day_code': day_code,
+            'day_name': day_name,
+            'cells': cells,
+        })
 
     session = AcademicSession.objects.filter(is_current=True).first()
     return render(request, 'student/printable_export.html', {
         'allocations': allocations,
+        'slots': slots,
+        'grid_rows': grid_rows,
         'user': user,
+        'selected_level': level,
         'session': session,
         'ACADEMIC_SESSION': session.name if session else '2025/2026',
         'ACADEMIC_SEMESTER': 'Harmattan (1st) Semester',
@@ -916,10 +1089,12 @@ def student_report_clash(request):
 # ==============================================================================
 
 @require_http_methods(['GET', 'POST'])
+@role_required([User.Role.FACULTY_ADMIN, User.Role.CENTRAL_ADMIN])
 def api_validate_slot(request):
     """
     Real-time pre-commit validation API (/api/validate-slot/).
     Evaluates multi-entity hard constraints and returns JSON status.
+    Strictly role-gated to Faculty and Central Admins.
     """
     course_code = request.GET.get('course') or request.POST.get('course')
     venue_code = request.GET.get('venue') or request.POST.get('venue')
@@ -927,8 +1102,8 @@ def api_validate_slot(request):
     time_slot_label = request.GET.get('time_slot') or request.POST.get('time_slot')
 
     from datetime import time
-    # Convert day string to integer (0=Monday..4=Friday)
-    day_map = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4}
+    # Convert day string to integer (0=Monday..5=Saturday)
+    day_map = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5}
     if day_raw in day_map:
         day = day_map[day_raw]
     else:
@@ -957,11 +1132,13 @@ def api_validate_slot(request):
 
     session = AcademicSession.objects.filter(is_current=True).first() or AcademicSession.objects.first()
     if not session:
-        session = AcademicSession.objects.create(name='2025/2026', is_current=True)
+        return JsonResponse({'valid': False, 'reason': 'No active academic session found.'}, status=400)
 
-    slot = TimeSlot.objects.filter(label=time_slot_label).first() or TimeSlot.objects.first()
+    slot = TimeSlot.objects.filter(label=time_slot_label).first() if time_slot_label else None
     if not slot:
-        slot = TimeSlot.objects.create(index=1, label=time_slot_label or '08:00 - 10:00', start_time=time(8, 0), end_time=time(10, 0))
+        slot = TimeSlot.objects.first()
+    if not slot:
+        return JsonResponse({'valid': False, 'reason': 'No valid canonical time slot configured.'}, status=400)
 
     if day == 4 and (slot.start_time < time(14, 0) and slot.end_time > time(12, 30)):
         reason = "HARD CONFLICT: Senate policy strictly prohibits scheduling lectures during Friday Juma'at prayer (12:30 PM - 2:00 PM)."
@@ -980,24 +1157,31 @@ def api_validate_slot(request):
 
     venue = Venue.objects.filter(code=venue_code).first() if venue_code else Venue.objects.first()
     if not venue:
-        venue = Venue.objects.create(code=venue_code or 'LT-AG', name='Abubakar Gimba LT', capacity=350)
+        return JsonResponse({'valid': False, 'reason': f"Venue '{venue_code}' not found."}, status=400)
 
     course = Course.objects.filter(code=course_code).first() if course_code else Course.objects.first()
     if not course:
-        fac, _ = Faculty.objects.get_or_create(code='SCI', defaults={'name': 'Faculty of Science'})
-        dept, _ = Department.objects.get_or_create(code='CSC', defaults={'name': 'Computer Science', 'faculty': fac})
-        course = Course.objects.create(code=course_code or 'CSC 301', title='Systems Analysis', credit_units=3, expected_capacity=185, department=dept)
+        return JsonResponse({'valid': False, 'reason': f"Course '{course_code}' not found."}, status=400)
 
-    lecturer = Lecturer.objects.first()
+    # Tenancy Scoping: If user is FACULTY_ADMIN, course must belong to their faculty
+    if request.user.role == User.Role.FACULTY_ADMIN:
+        if course.department.faculty_id != request.user.faculty_id:
+            return JsonResponse({
+                'valid': False,
+                'reason': "Cross-faculty validation forbidden: course belongs to another faculty.",
+                'conflicts': [{'type': 'BOLA_BLOCKED', 'reason': 'Cross-faculty validation forbidden.'}],
+                'checks': {
+                    'venue_available': False,
+                    'inter_faculty_cleared': False,
+                    'lecturer_free': False,
+                    'capacity_verified': False
+                }
+            }, status=403)
+
+    # Match lecturer for this department
+    lecturer = Lecturer.objects.filter(department=course.department).first() or Lecturer.objects.first()
     if not lecturer:
-        u, _ = User.objects.get_or_create(
-            institutional_id='FUD/LEC/TEST',
-            defaults={'username': 'fud_lec_test', 'role': User.Role.LECTURER, 'first_name': 'Aminu', 'last_name': 'Garba'}
-        )
-        lecturer, _ = Lecturer.objects.get_or_create(
-            user=u,
-            defaults={'staff_id': 'FUD/LEC/TEST', 'rank': 'Senior Lecturer', 'department': course.department}
-        )
+        return JsonResponse({'valid': False, 'reason': 'No academic staff assigned to this course unit.'}, status=400)
 
     is_valid, reason = validate_slot_allocation(
         course=course,

@@ -115,35 +115,6 @@
         </div>
       </form>
 
-      <!-- Quick Role Fill Demo Buttons -->
-      <div class="mt-6 pt-5 border-t border-slate-200">
-        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-3">
-          Instant Role Scopes (One-Click Testing)
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="fillCredentials('FUD/ADM/2024/001', 'Central Admin')"
-                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
-            <span class="font-bold text-[#1B4D3E] block">Central Admin</span>
-            <span class="text-slate-500 font-mono text-[10px]">FUD/ADM/2024/001</span>
-          </button>
-          <button type="button" onclick="fillCredentials('FUD/SCI/2024/014', 'Faculty Admin')"
-                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
-            <span class="font-bold text-[#1B4D3E] block">Faculty Admin</span>
-            <span class="text-slate-500 font-mono text-[10px]">FUD/SCI/2024/014</span>
-          </button>
-          <button type="button" onclick="fillCredentials('FUD/LEC/2024/088', 'Dr. Aminu Garba')"
-                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
-            <span class="font-bold text-[#1B4D3E] block">Lecturer</span>
-            <span class="text-slate-500 font-mono text-[10px]">FUD/LEC/2024/088</span>
-          </button>
-          <button type="button" onclick="fillCredentials('FUD/CST/21/0456', 'Fatima Bello')"
-                  class="p-2 text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-md transition text-[11px]">
-            <span class="font-bold text-[#1B4D3E] block">Student</span>
-            <span class="text-slate-500 font-mono text-[10px]">FUD/CST/21/0456</span>
-          </button>
-        </div>
-      </div>
-
     </div>
 
     <!-- Security & Institutional Notice -->
@@ -157,13 +128,4 @@
     </div>
   </div>
 </main>
-
-<script>
-  function fillCredentials(id, roleName) {
-    const idInput = document.getElementById('institutional_id');
-    const pwdInput = document.getElementById('password');
-    if (idInput) idInput.value = id;
-    if (pwdInput) pwdInput.value = 'FudPass@2025';
-  }
-</script>
 {% endblock %}

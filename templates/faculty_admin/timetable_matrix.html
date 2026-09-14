@@ -22,13 +22,14 @@
 
   <div class="flex items-center space-x-3">
     <!-- Level Selector -->
-    <select id="matrix_level_filter" onchange="filterMatrixLevel(this.value)"
-            class="px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700">
-      <option value="ALL">All Cohorts (100L–400L)</option>
-      <option value="100L">100 Level</option>
-      <option value="200L">200 Level</option>
-      <option value="300L" selected>300 Level</option>
-      <option value="400L">400 Level</option>
+    <select id="matrix_level_filter" onchange="window.location.href='?level=' + this.value"
+            class="px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B4D3E]">
+      <option value="ALL" {% if selected_level == 'ALL' %}selected{% endif %}>All Cohorts (100L–500L)</option>
+      <option value="100" {% if selected_level == '100' %}selected{% endif %}>100 Level</option>
+      <option value="200" {% if selected_level == '200' %}selected{% endif %}>200 Level</option>
+      <option value="300" {% if selected_level == '300' or not selected_level %}selected{% endif %}>300 Level</option>
+      <option value="400" {% if selected_level == '400' %}selected{% endif %}>400 Level</option>
+      <option value="500" {% if selected_level == '500' %}selected{% endif %}>500 Level</option>
     </select>
 
     <button type="button" onclick="openOverrideModal('', '', '', '', '')"
@@ -59,278 +60,74 @@
         <span class="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span>
         <span>Override / Modified</span>
       </span>
+      <span class="flex items-center space-x-1 text-slate-600">
+        <span class="w-2.5 h-2.5 rounded bg-sky-500 inline-block"></span>
+        <span>Cybersecurity</span>
+      </span>
     </div>
 
     <div class="text-slate-500 font-mono text-[11px]">
-      Click any cell card to launch Real-Time Pre-Commit Validation
+      Showing: <strong class="text-slate-800 font-bold">{% if selected_level == 'ALL' %}All Cohorts{% else %}{{ selected_level }} Level{% endif %}</strong> &bull; Click any cell card to launch Real-Time Pre-Commit Validation
     </div>
   </div>
 
   <div class="overflow-x-auto">
-    <table class="w-full border-collapse text-xs min-w-[1100px]">
+    <table class="w-full border-collapse text-xs min-w-[1000px]">
       <thead>
         <tr class="bg-[#F8F9FA] text-slate-700 font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
           <th class="p-3 border-r border-[#E2E8F0] text-center w-28 bg-[#1B4D3E] text-white">Day / Time</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">08:00 - 09:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">09:00 - 10:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">10:00 - 11:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">11:00 - 12:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">12:00 - 13:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">13:00 - 14:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">14:00 - 15:00</th>
-          <th class="p-3 border-r border-[#E2E8F0] text-center w-36">15:00 - 16:00</th>
-          <th class="p-3 text-center w-36">16:00 - 18:00</th>
+          {% for slot in slots %}
+          <th class="p-3 border-r border-[#E2E8F0] text-center min-w-[160px]">{{ slot.label }}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody class="divide-y divide-[#E2E8F0] text-slate-800">
-
-        <!-- MONDAY -->
+        {% for row in grid_rows %}
         <tr class="h-28">
           <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase tracking-wider text-xs">
-            Monday
+            {{ row.day_name }}
           </td>
-          <!-- 8-9 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('CSC 301', 'Monday', '08:00 - 10:00', 'LT-AG', 'Dr. Aminu Sani Dutse')"
-                 class="h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 hover:border-[#1B4D3E] hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#1B4D3E]">CSC 301</span>
-                  <span class="px-1 bg-emerald-200 text-emerald-900 rounded text-[9px] font-bold">300L</span>
+          {% for cell in row.cells %}
+            {% if cell.is_friday_prayer %}
+              <td class="p-2 border-r border-[#E2E8F0] align-middle bg-amber-100/70 text-center">
+                <div class="p-2 rounded-lg border border-dashed border-amber-400 text-amber-900 font-bold text-xs">
+                  <span class="block text-[10px] uppercase tracking-wider text-amber-800">Senate Hard Blackout Window</span>
+                  Friday Juma'at Prayer (12:30 PM – 2:00 PM)
                 </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Systems Analysis</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-emerald-800 font-bold">LT-AG</span>
-                <span class="truncate">Dr. Aminu</span>
-              </div>
-            </div>
-          </td>
-          <!-- 9-10 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-emerald-50/30">
-            <div class="h-full p-2 rounded-lg border border-dashed border-emerald-200 flex items-center justify-center text-[10px] text-emerald-800 font-medium italic">
-              CSC 301 (Cont.)
-            </div>
-          </td>
-          <!-- 10-11 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('CSC 305', 'Monday', '10:00 - 12:00', 'TWIN-A', 'Mal. K. Haruna')"
-                 class="h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 hover:border-[#1B4D3E] hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#1B4D3E]">CSC 305</span>
-                  <span class="px-1 bg-emerald-200 text-emerald-900 rounded text-[9px] font-bold">300L</span>
+              </td>
+            {% elif cell.allocations %}
+              <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
+                <div class="space-y-1.5 h-full">
+                  {% for a in cell.allocations %}
+                    <div onclick="openOverrideModal('{{ a.course.code }}', '{{ row.day_name }}', '{{ cell.slot.label }}', '{{ a.venue.code }}', '{{ a.lecturer.user.get_full_name|default:a.lecturer.staff_id }}')"
+                         class="h-full p-2 rounded-lg {% if a.course.code|slice:':2' == 'SE' %}bg-[#5C4033]/10 border border-[#5C4033]/30{% elif a.course.code|slice:':3' == 'CYB' %}bg-sky-50 border border-sky-300{% else %}bg-emerald-50 border border-emerald-300 hover:border-[#1B4D3E]{% endif %} hover:shadow-md transition cursor-pointer flex flex-col justify-between">
+                      <div>
+                        <div class="flex items-center justify-between">
+                          <span class="font-extrabold {% if a.course.code|slice:':2' == 'SE' %}text-[#5C4033]{% elif a.course.code|slice:':3' == 'CYB' %}text-sky-900{% else %}text-[#1B4D3E]{% endif %}">{{ a.course.code }}</span>
+                          <span class="px-1 {% if a.course.code|slice:':2' == 'SE' %}bg-[#5C4033]/20 text-[#5C4033]{% elif a.course.code|slice:':3' == 'CYB' %}bg-sky-200 text-sky-900{% else %}bg-emerald-200 text-emerald-900{% endif %} rounded text-[9px] font-bold">{{ a.course.level }}L</span>
+                        </div>
+                        <div class="text-[10px] text-slate-600 mt-0.5 truncate">{{ a.course.title }}</div>
+                      </div>
+                      <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
+                        <span class="font-mono {% if a.course.code|slice:':2' == 'SE' %}text-[#5C4033]{% elif a.course.code|slice:':3' == 'CYB' %}text-sky-800{% else %}text-emerald-800{% endif %} font-bold">{{ a.venue.code }}</span>
+                        <span class="truncate">{{ a.lecturer.user.last_name|default:a.lecturer.staff_id }}</span>
+                      </div>
+                    </div>
+                  {% endfor %}
                 </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Database Systems</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-emerald-800 font-bold">TWIN-A</span>
-                <span>Mal. Haruna</span>
-              </div>
-            </div>
-          </td>
-          <!-- 11-12 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-emerald-50/30">
-            <div class="h-full p-2 rounded-lg border border-dashed border-emerald-200 flex items-center justify-center text-[10px] text-emerald-800 font-medium italic">
-              CSC 305 (Cont.)
-            </div>
-          </td>
-          <!-- 12-13 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-bold">
-              Cohort Break
-            </div>
-          </td>
-          <!-- 13-14 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-bold">
-              Midday Window
-            </div>
-          </td>
-          <!-- 14-15 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('CSC 311', 'Monday', '14:00 - 16:00', 'LAB-PTDF', 'Dr. U. Garba')"
-                 class="h-full p-2 rounded-lg bg-[#5C4033]/10 border border-[#5C4033]/30 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#5C4033]">CSC 311</span>
-                  <span class="px-1 bg-[#5C4033]/20 text-[#5C4033] rounded text-[9px] font-bold">LAB</span>
-                </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Operating Systems Lab</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-[#5C4033] font-bold">PTDF-LAB</span>
-                <span>Dr. Garba</span>
-              </div>
-            </div>
-          </td>
-          <!-- 15-16 -->
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-[#5C4033]/5">
-            <div class="h-full p-2 rounded-lg border border-dashed border-[#5C4033]/30 flex items-center justify-center text-[10px] text-[#5C4033] font-medium italic">
-              CSC 311 (Cont.)
-            </div>
-          </td>
-          <!-- 16-18 -->
-          <td class="p-1.5 align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-semibold">
-              Free Slot
-            </div>
-          </td>
+              </td>
+            {% else %}
+              <td class="p-1.5 border-r border-[#E2E8F0] align-middle bg-slate-50/60 text-center">
+                <button type="button"
+                        onclick="openOverrideModal('', '{{ row.day_name }}', '{{ cell.slot.label }}', '', '')"
+                        class="w-full h-full min-h-[50px] rounded-lg border border-dashed border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40 transition flex items-center justify-center text-[10px] text-slate-400 hover:text-[#1B4D3E] font-medium">
+                  + Assign
+                </button>
+              </td>
+            {% endif %}
+          {% endfor %}
         </tr>
-
-        <!-- TUESDAY -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase tracking-wider text-xs">
-            Tuesday
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('SE 301', 'Tuesday', '08:00 - 10:00', 'TWIN-B', 'Dr. Fatima B.')"
-                 class="h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#1B4D3E]">SE 301</span>
-                  <span class="px-1 bg-emerald-200 text-emerald-900 rounded text-[9px] font-bold">300L</span>
-                </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Software Architecture</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-emerald-800 font-bold">TWIN-B</span>
-                <span>Dr. Fatima</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-emerald-50/30">
-            <div class="h-full p-2 rounded-lg border border-dashed border-emerald-200 flex items-center justify-center text-[10px] text-emerald-800 font-medium italic">
-              SE 301 (Cont.)
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-semibold">
-              Free Slot
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('CYB 301', 'Tuesday', '11:00 - 13:00', 'LT-AG', 'Mal. K. Haruna')"
-                 class="h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#1B4D3E]">CYB 301</span>
-                  <span class="px-1 bg-emerald-200 text-emerald-900 rounded text-[9px] font-bold">300L</span>
-                </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Network Security</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-emerald-800 font-bold">LT-AG</span>
-                <span>Mal. Haruna</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-emerald-50/30">
-            <div class="h-full p-2 rounded-lg border border-dashed border-emerald-200 flex items-center justify-center text-[10px] text-emerald-800 font-medium italic">
-              CYB 301 (Cont.)
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-bold">
-              Midday Window
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white" colspan="2">
-            <div onclick="openOverrideModal('CSC 307', 'Tuesday', '14:00 - 16:00', 'TWIN-A', 'Dr. Aminu Sani Dutse')"
-                 class="h-full p-2 rounded-lg bg-amber-50 border border-amber-300 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#D97706]">CSC 307 &bull; OVERRIDE APPLIED</span>
-                  <span class="px-1 bg-amber-200 text-amber-900 rounded text-[9px] font-bold">300L</span>
-                </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Algorithms & Complexity Analysis (Adjusted per Lecturer Request)</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-amber-800 font-bold">TWIN-A (200 Seats)</span>
-                <span>Dr. Aminu Sani Dutse</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-1.5 align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-semibold">
-              Free Slot
-            </div>
-          </td>
-        </tr>
-
-        <!-- FRIDAY (Demonstrating Juma'at Lockout Window) -->
-        <tr class="h-28">
-          <td class="p-3 border-r border-[#E2E8F0] font-black text-center bg-[#F8F9FA] text-slate-800 uppercase tracking-wider text-xs">
-            Friday
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('CSC 309', 'Friday', '08:00 - 10:00', 'TWIN-B', 'Prof. B. Dutse')"
-                 class="h-full p-2 rounded-lg bg-emerald-50 border border-emerald-300 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#1B4D3E]">CSC 309</span>
-                  <span class="px-1 bg-emerald-200 text-emerald-900 rounded text-[9px] font-bold">300L</span>
-                </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Artificial Intelligence</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-emerald-800 font-bold">TWIN-B</span>
-                <span>Prof. B. Dutse</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-emerald-50/30">
-            <div class="h-full p-2 rounded-lg border border-dashed border-emerald-200 flex items-center justify-center text-[10px] text-emerald-800 font-medium italic">
-              CSC 309 (Cont.)
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-semibold">
-              Tutorial Session
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-semibold">
-              Pre-Prayer Break
-            </div>
-          </td>
-
-          <!-- Friday Juma'at Protected Window 12:30 - 14:00 -->
-          <td class="p-2 border-r border-[#E2E8F0] align-middle bg-amber-100/70 text-center" colspan="2">
-            <div class="p-2 rounded-lg border border-dashed border-amber-400 text-amber-900 font-bold text-xs">
-              <span class="block text-[11px] uppercase tracking-wider text-amber-800">Senate Hard Blackout Window</span>
-              Friday Juma'at Congregation Prayer (12:30 PM – 2:00 PM)
-            </div>
-          </td>
-
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
-            <div onclick="openOverrideModal('SE 305', 'Friday', '14:00 - 16:00', 'LAB-PTDF', 'Dr. U. Garba')"
-                 class="h-full p-2 rounded-lg bg-[#5C4033]/10 border border-[#5C4033]/30 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="font-extrabold text-[#5C4033]">SE 305</span>
-                  <span class="px-1 bg-[#5C4033]/20 text-[#5C4033] rounded text-[9px] font-bold">LAB</span>
-                </div>
-                <div class="text-[10px] text-slate-600 mt-0.5 truncate">Software Quality Lab</div>
-              </div>
-              <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
-                <span class="font-mono text-[#5C4033] font-bold">PTDF-LAB</span>
-                <span>Dr. Garba</span>
-              </div>
-            </div>
-          </td>
-          <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-[#5C4033]/5">
-            <div class="h-full p-2 rounded-lg border border-dashed border-[#5C4033]/30 flex items-center justify-center text-[10px] text-[#5C4033] font-medium italic">
-              SE 305 (Cont.)
-            </div>
-          </td>
-          <td class="p-1.5 align-top bg-slate-50/60">
-            <div class="h-full rounded-lg flex items-center justify-center text-[10px] text-slate-400 font-semibold">
-              Free Slot
-            </div>
-          </td>
-        </tr>
-
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -363,21 +160,22 @@
         <div>
           <label class="block font-bold uppercase text-slate-600 mb-1">Target Course</label>
           <select id="modal_course" name="course" onchange="runLiveSlotValidation()" class="w-full p-2.5 rounded-lg border border-slate-300 font-bold text-slate-800">
-            <option value="CSC 301">CSC 301 - Systems Analysis (185 Students)</option>
-            <option value="CSC 305">CSC 305 - Database Systems (190 Students)</option>
-            <option value="CSC 307">CSC 307 - Algorithms (180 Students)</option>
-            <option value="CSC 309">CSC 309 - Artificial Intelligence (170 Students)</option>
-            <option value="CSC 101">CSC 101 - Intro to CS (320 Students - Large)</option>
+            {% for c in courses %}
+            <option value="{{ c.code }}">{{ c.code }} - {{ c.title|truncatechars:28 }} ({{ c.level }}L)</option>
+            {% empty %}
+            <option value="CSC 301">CSC 301 - Systems Analysis (300L)</option>
+            {% endfor %}
           </select>
         </div>
 
         <div>
           <label class="block font-bold uppercase text-slate-600 mb-1">Assigned Lecturer</label>
           <select id="modal_lecturer" name="lecturer" onchange="runLiveSlotValidation()" class="w-full p-2.5 rounded-lg border border-slate-300 font-medium text-slate-800">
+            {% for l in lecturers %}
+            <option value="{{ l.user.get_full_name }}">{{ l.user.get_full_name }} ({{ l.department.code }})</option>
+            {% empty %}
             <option value="Dr. Aminu Sani Dutse">Dr. Aminu Sani Dutse</option>
-            <option value="Prof. Bello Dutse">Prof. Bello Dutse</option>
-            <option value="Dr. U. Garba">Dr. U. Garba</option>
-            <option value="Mal. Kabiru Haruna">Mal. Kabiru Haruna</option>
+            {% endfor %}
           </select>
         </div>
       </div>
@@ -391,28 +189,34 @@
             <option value="Wednesday">Wednesday</option>
             <option value="Thursday">Thursday</option>
             <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
           </select>
         </div>
 
         <div>
           <label class="block font-bold uppercase text-slate-600 mb-1">Time Slot</label>
           <select id="modal_time" name="time_slot" onchange="runLiveSlotValidation()" class="w-full p-2 rounded-lg border border-slate-300 font-mono">
+            {% for s in slots %}
+            <option value="{{ s.label }}">{{ s.label }}</option>
+            {% empty %}
             <option value="08:00 - 10:00">08:00 - 10:00</option>
             <option value="10:00 - 12:00">10:00 - 12:00</option>
             <option value="12:00 - 14:00">12:00 - 14:00 (Check Friday)</option>
             <option value="14:00 - 16:00">14:00 - 16:00</option>
             <option value="16:00 - 18:00">16:00 - 18:00</option>
+            {% endfor %}
           </select>
         </div>
 
         <div>
           <label class="block font-bold uppercase text-slate-600 mb-1">Target Venue</label>
           <select id="modal_venue" name="venue" onchange="runLiveSlotValidation()" class="w-full p-2 rounded-lg border border-slate-300 font-mono font-bold">
+            {% for v in venues %}
+            <option value="{{ v.code }}">{{ v.code }} (Cap: {{ v.capacity }})</option>
+            {% empty %}
             <option value="LT-AG">LT-AG (Abubakar Gimba - 350 seats)</option>
             <option value="TWIN-A">TWIN-A (Faculty Science - 200 seats)</option>
-            <option value="TWIN-B">TWIN-B (Faculty Science - 200 seats)</option>
-            <option value="LAB-PTDF">LAB-PTDF (Workstations - 80 seats)</option>
-            <option value="HALL-4">HALL-4 (General - 100 seats)</option>
+            {% endfor %}
           </select>
         </div>
       </div>
