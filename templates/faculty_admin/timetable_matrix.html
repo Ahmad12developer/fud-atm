@@ -99,7 +99,7 @@
               <td class="p-1.5 border-r border-[#E2E8F0] align-top bg-white">
                 <div class="space-y-1.5 h-full">
                   {% for a in cell.allocations %}
-                    <div onclick="openOverrideModal('{{ a.course.code }}', '{{ row.day_name }}', '{{ cell.slot.label }}', '{{ a.venue.code }}', '{{ a.lecturer.user.get_full_name|default:a.lecturer.staff_id }}')"
+                    <div onclick="openOverrideModal('{{ a.course.code }}', '{{ row.day_name }}', '{{ cell.slot.label }}', '{{ a.venue.code }}', '{% if a.lecturer.user.get_full_name %}{{ a.lecturer.user.get_full_name }}{% else %}{{ a.lecturer.staff_id }}{% endif %}')"
                          class="h-full p-2 rounded-lg {% if a.course.code|slice:':2' == 'SE' %}bg-[#5C4033]/10 border border-[#5C4033]/30{% elif a.course.code|slice:':3' == 'CYB' %}bg-sky-50 border border-sky-300{% else %}bg-emerald-50 border border-emerald-300 hover:border-[#1B4D3E]{% endif %} hover:shadow-md transition cursor-pointer flex flex-col justify-between">
                       <div>
                         <div class="flex items-center justify-between">
@@ -110,7 +110,7 @@
                       </div>
                       <div class="text-[10px] font-medium text-slate-500 flex items-center justify-between mt-1">
                         <span class="font-mono {% if a.course.code|slice:':2' == 'SE' %}text-[#5C4033]{% elif a.course.code|slice:':3' == 'CYB' %}text-sky-800{% else %}text-emerald-800{% endif %} font-bold">{{ a.venue.code }}</span>
-                        <span class="truncate">{{ a.lecturer.user.last_name|default:a.lecturer.staff_id }}</span>
+                        <span class="truncate">{% if a.lecturer.user.last_name %}{{ a.lecturer.user.last_name }}{% else %}{{ a.lecturer.staff_id }}{% endif %}</span>
                       </div>
                     </div>
                   {% endfor %}

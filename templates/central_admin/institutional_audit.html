@@ -93,8 +93,13 @@
               {{ log.timestamp|date:"Y-m-d H:i:s" }}
             </td>
             <td class="p-3.5">
-              <div class="font-bold text-slate-900">{{ log.user.get_full_name|default:log.user.institutional_id|default:"System Engine" }}</div>
-              <div class="text-[10px] font-mono text-slate-400">{{ log.user.institutional_id|default:"SYSTEM" }}</div>
+              {% if log.user %}
+                <div class="font-bold text-slate-900">{% if log.user.get_full_name %}{{ log.user.get_full_name }}{% else %}{{ log.user.institutional_id }}{% endif %}</div>
+                <div class="text-[10px] font-mono text-slate-400">{{ log.user.institutional_id }}</div>
+              {% else %}
+                <div class="font-bold text-slate-900">System Engine</div>
+                <div class="text-[10px] font-mono text-slate-400">SYSTEM</div>
+              {% endif %}
             </td>
             <td class="p-3.5">
               {% include 'components/audit_badge.html' with badge_type='action' value=log.action %}

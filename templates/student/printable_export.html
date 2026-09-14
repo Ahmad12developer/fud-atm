@@ -250,7 +250,7 @@
               {% for alloc in cell.allocations %}
                 <div class="cell-course">{{ alloc.course.code }} ({{ alloc.course.credit_units }} CU)</div>
                 <div class="cell-title">{{ alloc.course.title }}</div>
-                <div class="cell-meta">{{ alloc.venue.name }} &bull; {{ alloc.lecturer.user.get_full_name|default:alloc.lecturer.user.username }}</div>
+                <div class="cell-meta">{{ alloc.venue.name }} &bull; {% if alloc.lecturer.user.get_full_name %}{{ alloc.lecturer.user.get_full_name }}{% else %}{{ alloc.lecturer.user.username }}{% endif %}</div>
               {% endfor %}
             </td>
           {% else %}

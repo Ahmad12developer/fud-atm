@@ -1121,6 +1121,25 @@ class FudRemediationAndHardeningTests(FudBaseTestCase):
         self.assertIn('Monday', content)
         self.assertIn('Saturday', content)
 
+    def test_institutional_audit_renders_with_null_user(self):
+        """Audit logs created by system engine (user=None) render correctly without template errors."""
+        AuditLog.objects.create(
+            user=None,
+            action="LOGIN_FAILED",
+            entity_type="AUTH",
+            entity_id="FUD/UNKNOWN/999",
+            ip_address="127.0.0.1",
+            details={"reason": "Invalid credentials"}
+        )
+        self.client.force_login(self.user_admin)
+        resp = self.client.get('/central/audit/')
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode('utf-8')
+        self.assertIn('System Engine', content)
+        self.assertIn('SYSTEM', content)
+        self.assertIn('LOGIN_FAILED', content)
+
+
 
 
 

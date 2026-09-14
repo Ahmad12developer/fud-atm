@@ -122,7 +122,7 @@
                       </div>
                       <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-100 flex items-center justify-between mt-1">
                         <span class="font-mono font-bold text-slate-800">{{ a.venue.code }}</span>
-                        <span>{{ a.lecturer.user.last_name|default:a.lecturer.staff_id }}</span>
+                        <span>{% if a.lecturer.user.last_name %}{{ a.lecturer.user.last_name }}{% else %}{{ a.lecturer.staff_id }}{% endif %}</span>
                       </div>
                     </div>
                   {% endfor %}

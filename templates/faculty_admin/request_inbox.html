@@ -61,7 +61,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
       <div>
         <span class="text-slate-400 uppercase font-bold text-[10px] block">Lecturer</span>
-        <span class="font-bold text-slate-900 block text-sm">{{ ticket.lecturer.user.get_full_name|default:ticket.lecturer.user.username }}</span>
+        <span class="font-bold text-slate-900 block text-sm">{% if ticket.lecturer.user.get_full_name %}{{ ticket.lecturer.user.get_full_name }}{% else %}{{ ticket.lecturer.user.username }}{% endif %}</span>
         <span class="text-slate-500 text-[11px]">{{ ticket.lecturer.rank|default:"Academic Staff" }} &bull; {{ ticket.lecturer.department.name }}</span>
       </div>
 
@@ -75,7 +75,7 @@
         <span class="text-slate-400 uppercase font-bold text-[10px] block">Slot Adjustment</span>
         <div class="text-[11px] space-y-0.5">
           <div><strong class="text-slate-500">Current:</strong> {{ ticket.allocation.get_day_of_week_display }} {{ ticket.allocation.slot.label }} @ {{ ticket.allocation.venue.name }}</div>
-          <div><strong class="text-[#1B4D3E]">Requested:</strong> {{ ticket.get_requested_day_display|default:ticket.allocation.get_day_of_week_display }} {{ ticket.requested_slot.label|default:ticket.allocation.slot.label }} @ {{ ticket.requested_venue.name|default:ticket.allocation.venue.name }}</div>
+          <div><strong class="text-[#1B4D3E]">Requested:</strong> {% if ticket.requested_day is not None %}{{ ticket.get_requested_day_display }}{% else %}{{ ticket.allocation.get_day_of_week_display }}{% endif %} {% if ticket.requested_slot %}{{ ticket.requested_slot.label }}{% else %}{{ ticket.allocation.slot.label }}{% endif %} @ {% if ticket.requested_venue %}{{ ticket.requested_venue.name }}{% else %}{{ ticket.allocation.venue.name }}{% endif %}</div>
         </div>
       </div>
     </div>
