@@ -1139,6 +1139,79 @@ class FudRemediationAndHardeningTests(FudBaseTestCase):
         self.assertIn('SYSTEM', content)
         self.assertIn('LOGIN_FAILED', content)
 
+    def test_logo_rendered_on_login_and_topbar(self):
+        """Official FUD crest logo renders on login page, authenticated topbar, and printable export."""
+        # Login page
+        resp_login = self.client.get('/login/')
+        self.assertEqual(resp_login.status_code, 200)
+        self.assertContains(resp_login, 'fud-logo.png')
+
+        # Authenticated topbar
+        self.client.force_login(self.user_admin)
+        resp_dash = self.client.get('/central/dashboard/')
+        self.assertEqual(resp_dash.status_code, 200)
+        self.assertContains(resp_dash, 'fud-logo.png')
+
+        # Printable export header
+        self.client.force_login(self.user_student)
+        resp_export = self.client.get('/student/export/')
+        self.assertEqual(resp_export.status_code, 200)
+        self.assertContains(resp_export, 'fud-logo.png')
+
+    def test_user_profile_page_get(self):
+        """Authenticated user can view their profile and avatar management page."""
+        self.client.force_login(self.user_lecturer)
+        resp = self.client.get('/profile/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'My Institutional Profile & Avatar')
+        self.assertContains(resp, self.user_lecturer.institutional_id)
+
+    def test_user_profile_picture_upload_and_removal(self):
+        """User can upload valid image as avatar and remove it."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        import io
+        from PIL import Image
+
+        self.client.force_login(self.user_lecturer)
+        
+        # 1. Create a valid PNG image
+        buf = io.BytesIO()
+        img = Image.new('RGB', (64, 64), color='green')
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        uploaded_img = SimpleUploadedFile('test_avatar.png', buf.read(), content_type='image/png')
+
+        # Upload avatar
+        resp = self.client.post('/profile/', {'profile_picture': uploaded_img})
+        self.assertEqual(resp.status_code, 302)
+        
+        self.user_lecturer.refresh_from_db()
+        self.assertTrue(bool(self.user_lecturer.profile_picture))
+        self.assertIn('profile_pics/', self.user_lecturer.profile_picture.name)
+
+        # Verify avatar renders on profile page and topbar
+        resp_profile = self.client.get('/profile/')
+        self.assertContains(resp_profile, self.user_lecturer.profile_picture.url)
+
+        # 2. Remove avatar
+        resp_remove = self.client.post('/profile/', {'action': 'remove'})
+        self.assertEqual(resp_remove.status_code, 302)
+        self.user_lecturer.refresh_from_db()
+        self.assertFalse(bool(self.user_lecturer.profile_picture))
+
+    def test_user_profile_picture_invalid_file_rejected(self):
+        """Corrupted or non-image files are safely rejected with user-friendly error message."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.client.force_login(self.user_student)
+
+        fake_file = SimpleUploadedFile('malicious.exe', b'NOT_AN_IMAGE_FILE_DATA', content_type='application/x-dosexec')
+        resp = self.client.post('/profile/', {'profile_picture': fake_file}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.user_student.refresh_from_db()
+        self.assertFalse(bool(self.user_student.profile_picture))
+        self.assertContains(resp, 'Invalid or corrupted image file')
+
+
 
 
 

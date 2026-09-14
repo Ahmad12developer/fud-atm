@@ -1208,3 +1208,81 @@ def api_validate_slot(request):
             'capacity_verified': is_valid and (venue.capacity >= course.expected_capacity)
         }
     })
+
+
+from django.contrib.auth.decorators import login_required
+from PIL import Image
+import os
+
+
+@login_required
+def user_profile(request):
+    """User account profile and avatar photo upload controller."""
+    user = request.user
+    error_msg = None
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'remove':
+            if user.profile_picture:
+                try:
+                    if os.path.isfile(user.profile_picture.path):
+                        os.remove(user.profile_picture.path)
+                except Exception:
+                    pass
+                user.profile_picture = None
+                user.save(update_fields=['profile_picture'])
+                log_audit(
+                    action="PROFILE_PICTURE_REMOVE",
+                    entity_type="USER",
+                    entity_id=user.institutional_id,
+                    user=user,
+                    request=request,
+                    details={'institutional_id': user.institutional_id}
+                )
+                messages.success(request, "Profile picture removed successfully.")
+                return redirect('user_profile')
+
+        elif 'profile_picture' in request.FILES:
+            uploaded_file = request.FILES['profile_picture']
+
+            # File size limit (3MB)
+            if uploaded_file.size > 3 * 1024 * 1024:
+                error_msg = "Image file too large. Maximum allowed file size is 3MB."
+            else:
+                try:
+                    img = Image.open(uploaded_file)
+                    img.verify()
+                    if img.format.lower() not in ['jpeg', 'jpg', 'png', 'webp']:
+                        error_msg = "Unsupported format. Please upload a JPG, PNG, or WEBP image."
+                    else:
+                        uploaded_file.seek(0)
+                        if user.profile_picture:
+                            try:
+                                if os.path.isfile(user.profile_picture.path):
+                                    os.remove(user.profile_picture.path)
+                            except Exception:
+                                pass
+                        user.profile_picture = uploaded_file
+                        user.save(update_fields=['profile_picture'])
+                        log_audit(
+                            action="PROFILE_PICTURE_UPLOAD",
+                            entity_type="USER",
+                            entity_id=user.institutional_id,
+                            user=user,
+                            request=request,
+                            details={'filename': uploaded_file.name, 'size': uploaded_file.size}
+                        )
+                        messages.success(request, "Profile picture updated successfully.")
+                        return redirect('user_profile')
+                except Exception:
+                    error_msg = "Invalid or corrupted image file. Please choose a valid image file."
+
+        if error_msg:
+            messages.error(request, error_msg)
+
+    return render(request, 'accounts/profile.html', {
+        'profile_user': user,
+    })
+

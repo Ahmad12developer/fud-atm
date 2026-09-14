@@ -58,6 +58,14 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(institutional_id, password, **extra_fields)
 
 
+def user_profile_pic_path(instance, filename):
+    ext = filename.split('.')[-1].lower() if '.' in filename else 'jpg'
+    if ext not in ['jpg', 'jpeg', 'png', 'webp']:
+        ext = 'jpg'
+    safe_id = "".join(c if c.isalnum() else "_" for c in instance.institutional_id)
+    return f"profile_pics/{safe_id}.{ext}"
+
+
 class User(AbstractUser):
     class Role(models.TextChoices):
         CENTRAL_ADMIN = 'CENTRAL_ADMIN', 'Central Administrator'
@@ -72,6 +80,7 @@ class User(AbstractUser):
     faculty = models.ForeignKey(Faculty, null=True, blank=True, on_delete=models.PROTECT, related_name='users')
     department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.PROTECT, related_name='users')
     level = models.PositiveSmallIntegerField(null=True, blank=True, choices=LEVEL_CHOICES)
+    profile_picture = models.ImageField(upload_to=user_profile_pic_path, null=True, blank=True)
 
     # Anti-Brute-Force Bookkeeping
     failed_login_count = models.PositiveIntegerField(default=0)
@@ -124,6 +133,21 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.get_full_name() or self.username} [{self.role}] ({self.institutional_id})"
+
+    @property
+    def name(self):
+        full = self.get_full_name().strip()
+        return full if full else self.institutional_id
+
+    @property
+    def avatar_url(self):
+        if self.profile_picture and hasattr(self.profile_picture, 'url'):
+            try:
+                return self.profile_picture.url
+            except ValueError:
+                return None
+        return None
+
 
 
 # ==============================================================================

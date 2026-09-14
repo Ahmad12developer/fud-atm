@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.root_dispatch, name='root_dispatch'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.user_profile, name='user_profile'),
 
     # Central Admin Operations
     path('central/dashboard/', views.central_dashboard, name='central_dashboard'),

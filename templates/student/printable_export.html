@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -207,10 +208,16 @@
   <header class="institutional-print-header">
     <table class="header-table">
       <tr>
-        <td class="univ-title">
+        <td style="width: 70px; vertical-align: middle; text-align: center; padding-right: 10px;">
+          <img src="{% static 'img/fud-logo.png' %}" alt="FUD Crest" style="width: 60px; height: 60px; object-fit: contain;">
+        </td>
+        <td class="univ-title" style="vertical-align: middle;">
           <h1>FEDERAL UNIVERSITY DUTSE</h1>
           <h2>DIRECTORATE OF ACADEMIC PLANNING (DAP) &bull; TIMETABLE COMMITTEE</h2>
           <p>P.M.B 7156, Dutse, Jigawa State, Nigeria &bull; "Knowledge, Excellence & Service"</p>
+        </td>
+        <td style="width: 70px; vertical-align: middle; text-align: center; padding-left: 10px;">
+          <img src="{% static 'img/fud-logo.png' %}" alt="FUD Crest" style="width: 60px; height: 60px; object-fit: contain;">
         </td>
       </tr>
     </table>

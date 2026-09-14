@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile & Avatar | Federal University Dutse ATMS{% endblock %}
+
+{% block root_layout %}
+<div class="min-h-screen flex flex-col bg-[#F8F9FA]">
+  {% include 'components/topbar.html' %}
+
+  <div class="flex-1 flex overflow-hidden">
+    {% include 'components/sidebar.html' %}
+
+    <main id="main-content" class="flex-1 overflow-y-auto p-6 focus:outline-none" tabindex="-1">
+      <div class="max-w-4xl mx-auto space-y-6">
+
+        <!-- Page Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E2E8F0] pb-4">
+          <div>
+            <h1 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <svg class="w-6 h-6 text-[#1B4D3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              My Institutional Profile & Avatar
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Manage your personal university avatar, view credentials, and account scope.
+            </p>
+          </div>
+          <a href="javascript:history.back()" class="inline-flex items-center text-xs font-bold text-[#1B4D3E] hover:underline">
+            &larr; Back to Dashboard
+          </a>
+        </div>
+
+        <!-- Flash Message Alerts -->
+        {% include 'components/messages.html' %}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- Left Column: Identity Summary Card -->
+          <div class="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col items-center text-center space-y-4">
+            
+            <!-- Avatar Display Container -->
+            <div class="relative group">
+              <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-amber-400/80 shadow-md bg-white flex items-center justify-center">
+                {% if profile_user.avatar_url %}
+                  <img src="{{ profile_user.avatar_url }}" alt="{{ profile_user.name }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full bg-[#1B4D3E] flex items-center justify-center text-white text-4xl font-extrabold">
+                    {{ profile_user.name|slice:":1"|default:"F" }}
+                  </div>
+                {% endif %}
+              </div>
+
+              {% if profile_user.avatar_url %}
+                <span class="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full" title="Profile picture active"></span>
+              {% endif %}
+            </div>
+
+            <div>
+              <h2 class="text-base font-bold text-slate-900">{{ profile_user.name }}</h2>
+              <p class="text-xs font-mono text-[#1B4D3E] font-semibold mt-0.5">{{ profile_user.institutional_id }}</p>
+            </div>
+
+            <!-- Role Badge -->
+            <div>
+              <span class="inline-block px-3 py-1 bg-amber-100 text-[#5C4033] border border-amber-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                {% if profile_user.role == 'CENTRAL_ADMIN' %}Central Administrator
+                {% elif profile_user.role == 'FACULTY_ADMIN' %}Faculty Timetable Officer
+                {% elif profile_user.role == 'LECTURER' %}Academic Staff / Lecturer
+                {% elif profile_user.role == 'STUDENT' %}Undergraduate Student
+                {% else %}{{ profile_user.role }}
+                {% endif %}
+              </span>
+            </div>
+
+            <!-- Scope Details -->
+            <div class="w-full pt-4 border-t border-slate-100 text-left text-xs space-y-2 text-slate-600">
+              {% if profile_user.faculty %}
+              <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400 font-semibold">Faculty:</span>
+                <span class="font-bold text-slate-800 text-right">{{ profile_user.faculty.name }}</span>
+              </div>
+              {% endif %}
+
+              {% if profile_user.department %}
+              <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400 font-semibold">Department:</span>
+                <span class="font-bold text-slate-800 text-right">{{ profile_user.department.name }}</span>
+              </div>
+              {% endif %}
+
+              {% if profile_user.level %}
+              <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400 font-semibold">Level:</span>
+                <span class="font-bold text-slate-800">{{ profile_user.level }} Level</span>
+              </div>
+              {% endif %}
+
+              <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400 font-semibold">Email:</span>
+                <span class="font-mono text-slate-700 text-right truncate max-w-[170px]">{{ profile_user.email|default:"N/A" }}</span>
+              </div>
+            </div>
+
+            {% if profile_user.avatar_url %}
+              <!-- Remove Avatar Button -->
+              <form action="{% url 'user_profile' %}" method="POST" class="w-full pt-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <button type="submit" onclick="return confirm('Are you sure you want to remove your profile picture?')"
+                        class="w-full py-2 px-3 text-xs font-semibold text-[#DC2626] bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
+                  Remove Profile Picture
+                </button>
+              </form>
+            {% endif %}
+
+          </div>
+
+          <!-- Right Column: Profile Picture Upload Section -->
+          <div class="md:col-span-2 bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-6 space-y-6">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Upload New Profile Picture</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Upload a clear portrait photo. It will appear on your topbar, dashboard cards, and institutional timetable records.
+              </p>
+            </div>
+
+            <!-- Upload Form -->
+            <form action="{% url 'user_profile' %}" method="POST" enctype="multipart/form-data" class="space-y-5" id="avatarUploadForm">
+              {% csrf_token %}
+
+              <!-- Drag and Drop Box -->
+              <div class="relative border-2 border-dashed border-slate-300 hover:border-[#1B4D3E] rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-emerald-50/30"
+                   id="dropZone" onclick="document.getElementById('profile_picture_input').click()">
+                
+                <input type="file" id="profile_picture_input" name="profile_picture" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="previewImage(this)">
+
+                <div id="dropZoneContent" class="space-y-2">
+                  <div class="w-12 h-12 rounded-full bg-emerald-100 text-[#1B4D3E] flex items-center justify-center mx-auto">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div class="text-xs font-bold text-slate-700">
+                    <span class="text-[#1B4D3E] hover:underline">Click to browse</span> or drag and drop your photo here
+                  </div>
+                  <div class="text-[11px] text-slate-400">
+                    JPG, PNG, or WEBP up to 3MB
+                  </div>
+                </div>
+
+                <!-- Image Preview Area -->
+                <div id="previewContainer" class="hidden flex-col items-center space-y-2">
+                  <img id="imagePreview" src="#" alt="Upload Preview" class="w-28 h-28 object-cover rounded-full border-4 border-amber-400 shadow-md">
+                  <p id="fileNamePreview" class="text-xs font-mono font-bold text-slate-700"></p>
+                  <span class="text-[10px] text-[#1B4D3E] underline font-semibold">Click to choose a different photo</span>
+                </div>
+              </div>
+
+              <!-- Upload Guidelines & Requirements -->
+              <div class="rounded-lg bg-[#F8F9FA] border border-slate-200 p-3.5 text-xs text-slate-600 space-y-1.5">
+                <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                  </svg>
+                  Institutional Photo Guidelines:
+                </div>
+                <ul class="list-disc list-inside space-y-1 text-[11px] text-slate-500 pl-1">
+                  <li>Use a clear, front-facing portrait or passport photograph.</li>
+                  <li>Ensure the file is under 3MB in size.</li>
+                  <li>Acceptable formats: JPEG, PNG, or WEBP.</li>
+                  <li>Inappropriate, offensive, or non-representative images will be purged by the system administrator.</li>
+                </ul>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-end space-x-3 pt-2">
+                <button type="button" onclick="cancelPreview()" id="cancelBtn" class="hidden px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                  Cancel
+                </button>
+                <button type="submit" id="submitBtn" class="px-5 py-2.5 text-xs font-bold text-white bg-[#1B4D3E] hover:bg-[#13392E] rounded-lg shadow-sm transition focus:ring-2 focus:ring-amber-400">
+                  Save & Update Profile Picture
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      // Validate size client-side (3MB)
+      if (file.size > 3 * 1024 * 1024) {
+        alert('File size exceeds 3MB limit. Please choose a smaller file.');
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('imagePreview');
+        const previewContainer = document.getElementById('previewContainer');
+        const dropZoneContent = document.getElementById('dropZoneContent');
+        const fileNamePreview = document.getElementById('fileNamePreview');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        preview.src = e.target.result;
+        fileNamePreview.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        
+        dropZoneContent.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+        cancelBtn.classList.remove('hidden');
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function cancelPreview() {
+    const input = document.getElementById('profile_picture_input');
+    const previewContainer = document.getElementById('previewContainer');
+    const dropZoneContent = document.getElementById('dropZoneContent');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    input.value = '';
+    previewContainer.classList.add('hidden');
+    dropZoneContent.classList.remove('hidden');
+    cancelBtn.classList.add('hidden');
+  }
+
+  // Drag and drop events
+  const dropZone = document.getElementById('dropZone');
+  if (dropZone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-[#1B4D3E]', 'bg-emerald-50/50');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-[#1B4D3E]', 'bg-emerald-50/50');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      const input = document.getElementById('profile_picture_input');
+      if (files.length > 0) {
+        input.files = files;
+        previewImage(input);
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,6 +1,18 @@
+{% load static %}
 <!-- Server-Side Role-Gated Sidebar Navigation -->
 <aside class="w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between flex-shrink-0 shadow-sm">
-  <div class="p-4 space-y-6">
+  <div class="p-4 space-y-4">
+
+    <!-- Institutional Crest Brand Card -->
+    <div class="flex items-center space-x-3 p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+      <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-0.5 border border-amber-300 shadow-sm flex-shrink-0 overflow-hidden">
+        <img src="{% static 'img/fud-logo.png' %}" alt="FUD Crest" class="w-full h-full object-contain" />
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-black text-[#1B4D3E] truncate">FEDERAL UNIVERSITY DUTSE</div>
+        <div class="text-[10px] font-mono text-[#5C4033] truncate">ATMS Academic Portal</div>
+      </div>
+    </div>
 
     <!-- Role Scope Banner -->
     <div class="px-3 py-2.5 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0]">
@@ -202,6 +214,18 @@
           <span>Report Clash / Incident</span>
         </a>
       {% endif %}
+
+      <!-- Universal Account & Profile Link -->
+      <div class="pt-3 mt-3 border-t border-slate-200">
+        <a href="{% url 'user_profile' %}"
+           {% if request.path == '/profile/' %}aria-current="page"{% endif %}
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-colors {% if request.path == '/profile/' %}bg-[#1B4D3E] text-white shadow-sm{% else %}text-slate-700 hover:bg-[#F8F9FA] hover:text-[#1B4D3E]{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span>My Profile & Avatar</span>
+        </a>
+      </div>
 
     </nav>
   </div>
