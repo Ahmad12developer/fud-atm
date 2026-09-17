@@ -55,11 +55,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fud_atms.wsgi.application'
 
-# Database
+# Database (With Vercel Serverless /tmp compatibility)
+import os
+import shutil
+
+if os.environ.get('VERCEL'):
+    tmp_db = Path('/tmp/db.sqlite3')
+    base_db = BASE_DIR / 'db.sqlite3'
+    if not tmp_db.exists() and base_db.exists():
+        try:
+            shutil.copy2(base_db, tmp_db)
+        except Exception:
+            pass
+    DB_PATH = tmp_db
+else:
+    DB_PATH = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH,
     }
 }
 
@@ -106,7 +121,15 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Enable WhiteNoise for production static file serving if available
+try:
+    import whitenoise  # noqa: F401
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+except ImportError:
+    pass
 
 # Media files (User uploads, avatars)
 MEDIA_URL = '/media/'
